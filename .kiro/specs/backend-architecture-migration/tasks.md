@@ -41,14 +41,14 @@ This implementation plan transforms the single-file React prototype (ReturnPilot
     - Add indexes on customer_id, purchase_date, and status fields
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6_
 
-- [ ] 3. Checkpoint - Database setup complete
+- [x] 3. Checkpoint - Database setup complete
   - Verify Supabase connection works
   - Verify all tables are created with correct schema
   - Verify seed data is inserted correctly
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 4. Implement backend configuration and environment management
-  - [ ] 4.1 Create config.py for environment variables
+- [x] 4. Implement backend configuration and environment management
+  - [x] 4.1 Create config.py for environment variables
     - Load ANTHROPIC_API_KEY from environment
     - Load DATABASE_URL from environment
     - Load SUPABASE_URL and SUPABASE_KEY from environment
@@ -57,7 +57,7 @@ This implementation plan transforms the single-file React prototype (ReturnPilot
     - Validate all required environment variables on startup
     - _Requirements: 1.1, 1.5, 15.4, 15.6_
   
-  - [ ] 4.2 Create FastAPI main application with CORS and health check
+  - [x] 4.2 Create FastAPI main application with CORS and health check
     - Create main.py with FastAPI app instance
     - Configure CORS middleware with allowed origins from config
     - Implement GET /api/health endpoint returning status, database connection state, timestamp

@@ -62,3 +62,6 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local-only reference docs (not for the public repo)
+JUDGING_REPORT.md

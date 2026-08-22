@@ -1,0 +1,64 @@
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #c3c6d8;
+  border-radius: 20px;
+}
+
+.chat-area-bg {
+  background: linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%);
+}
+
+.typing-indicator span {
+  animation: blink 1.4s infinite both;
+  height: 6px;
+  width: 6px;
+  background: #004ccd;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 1px;
+}
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+}
+
+/* Reasoning trace: faint, italic, visually secondary to the actual reply */
+.reasoning-trace {
+  font-style: italic;
+  font-size: 12px;
+  line-height: 18px;
+  color: #424656;
+  opacity: 0.55;
+  padding: 2px 4px 0 4px;
+}
+.reasoning-trace .step {
+  display: block;
+}
+.reasoning-trace .step::before {
+  content: '· ';
+}

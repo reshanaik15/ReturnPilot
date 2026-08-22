@@ -1,0 +1,314 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Track Return - ReturnEase AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#0f62fe",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-low": "#f3f4f6",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "outline": "#737687",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "primary": "#004ccd",
+                      "primary-fixed": "#dbe1ff",
+                      "inverse-primary": "#b4c5ff",
+                      "tertiary": "#7b4d00",
+                      "on-tertiary-container": "#fff2e7",
+                      "on-background": "#191c1e",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#9c6300",
+                      "error-container": "#ffdad6",
+                      "background": "#f8f9fb",
+                      "inverse-surface": "#2e3132",
+                      "surface": "#f8f9fb",
+                      "on-secondary-fixed": "#07006c",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#6063ee",
+                      "surface-container-highest": "#e1e2e4",
+                      "on-secondary-fixed-variant": "#2f2ebe",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#c3c6d8",
+                      "surface-container": "#edeef0",
+                      "on-tertiary-fixed": "#2a1700",
+                      "on-surface-variant": "#424656",
+                      "secondary": "#4648d4",
+                      "surface-tint": "#0052dd",
+                      "tertiary-fixed": "#ffddb8",
+                      "secondary-fixed": "#e1e0ff",
+                      "on-primary-fixed": "#00174c",
+                      "on-primary-fixed-variant": "#003da9",
+                      "secondary-fixed-dim": "#c0c1ff",
+                      "inverse-on-surface": "#f0f1f3",
+                      "on-error-container": "#93000a",
+                      "surface-variant": "#e1e2e4",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-error": "#ffffff",
+                      "on-secondary-container": "#fffbff",
+                      "surface-dim": "#d9dadc",
+                      "surface-bright": "#f8f9fb",
+                      "on-primary-container": "#f3f3ff",
+                      "surface-container-high": "#e7e8ea",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#191c1e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "margin-desktop": "40px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface font-sans antialiased h-full flex flex-col">
+<!-- Top Navigation (Task-focused: Suppressing shell, using custom header) -->
+<header class="bg-surface sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop h-16 max-w-container-max mx-auto shadow-sm">
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div>
+<h1 class="text-headline-md font-headline-md font-extrabold text-primary">Track Return</h1>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Wireless Noise Cancelling Headphones | ID: RET-1024</p>
+</div>
+</div>
+<div class="flex items-center gap-4 hidden md:flex">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 flex flex-col gap-8">
+<!-- Progress Tracker Section -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 md:p-10 shadow-sm relative overflow-hidden">
+<h2 class="text-body-lg font-body-lg text-on-surface font-semibold mb-8">Return Status</h2>
+<div class="relative max-w-3xl mx-auto">
+<!-- Progress Line Background -->
+<div class="absolute top-6 left-6 right-6 h-1 bg-surface-container-high rounded-full -z-10 hidden sm:block"></div>
+<!-- Active Progress Line -->
+<div class="absolute top-6 left-6 w-[50%] h-1 bg-primary rounded-full -z-10 hidden sm:block transition-all duration-1000 ease-in-out"></div>
+<div class="flex flex-col sm:flex-row justify-between relative z-10 gap-8 sm:gap-0">
+<!-- Stage 1: Requested — same timestamp as Initiated, since the backend only records one createdat -->
+<div class="flex flex-row sm:flex-col items-center gap-4 sm:gap-2 relative group w-full sm:w-1/4">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm shrink-0">
+<span class="material-symbols-outlined" data-icon="check">check</span>
+</div>
+<div class="text-left sm:text-center">
+<h3 class="text-label-md font-label-md text-on-surface">Requested</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Aug 21, 2026</p>
+</div>
+<!-- Mobile connector line -->
+<div class="absolute left-6 top-12 bottom-[-2rem] w-0.5 bg-primary -z-10 sm:hidden"></div>
+</div>
+<!-- Stage 2: Initiated -->
+<div class="flex flex-row sm:flex-col items-center gap-4 sm:gap-2 relative group w-full sm:w-1/4">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm shrink-0">
+<span class="material-symbols-outlined" data-icon="check">check</span>
+</div>
+<div class="text-left sm:text-center">
+<h3 class="text-label-md font-label-md text-on-surface">Initiated</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Aug 21, 2026</p>
+</div>
+<!-- Mobile connector line -->
+<div class="absolute left-6 top-12 bottom-[-2rem] w-0.5 bg-primary -z-10 sm:hidden"></div>
+</div>
+<!-- Stage 3: In Transit (Current) -->
+<div class="flex flex-row sm:flex-col items-center gap-4 sm:gap-2 relative group w-full sm:w-1/4">
+<div class="absolute -inset-2 bg-primary/10 rounded-full animate-pulse blur-xl z-0 pointer-events-none hidden sm:block"></div>
+<div class="w-14 h-14 -ml-1 sm:ml-0 rounded-full bg-primary-container border-4 border-surface-container-lowest flex items-center justify-center text-primary shadow-md shrink-0 relative z-10">
+<span class="material-symbols-outlined text-[28px]" data-icon="local_shipping" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+<div class="text-left sm:text-center relative z-10">
+<h3 class="text-label-md font-label-md text-primary font-bold">In Transit</h3>
+<p class="text-label-sm font-label-sm text-primary">Package is on its way</p>
+</div>
+<!-- Mobile connector line -->
+<div class="absolute left-6 top-12 bottom-[-2rem] w-0.5 bg-surface-container-high -z-10 sm:hidden"></div>
+</div>
+<!-- Stage 4: Refunded -->
+<div class="flex flex-row sm:flex-col items-center gap-4 sm:gap-2 relative group w-full sm:w-1/4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-outline shadow-sm shrink-0 border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<div class="text-left sm:text-center">
+<h3 class="text-label-md font-label-md text-outline">Refunded</h3>
+<p class="text-label-sm font-label-sm text-outline-variant">Upcoming</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid for Details -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Return Details Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 hover:border-outline transition-colors shadow-sm md:col-span-3">
+<h3 class="text-body-lg font-body-lg text-on-surface font-semibold mb-4 border-b border-surface-container-low pb-2">Return Details</h3>
+<div class="flex flex-col sm:flex-row gap-6">
+<div class="w-full sm:w-32 h-32 rounded-lg overflow-hidden shrink-0 bg-surface-container flex items-center justify-center relative">
+<img class="w-full h-full object-cover" data-alt="Close-up product photography of high-end wireless noise cancelling headphones resting on a clean, modern white surface. Soft studio lighting highlights the premium matte finish and sleek curves of the audio device, creating a sterile, pristine aesthetic suitable for an e-commerce platform. High resolution, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjxNE6wr9R43-WF1LsVL2vhToUHRb3KhvJ_ukLY4eua7dnPy2Is695kvAmwMoMb8esTpE02VnjyJI8rXysX_ikUDEy45PpWmfFfXoUsIZc_VwEEOT1eUqj4gFdwejzngNBeMI9Iy39bFyB3pWCGyAaJpsUtVafYmm-LFQQOMSLv7IU-TWv2NFBfJl4McuXnz05zaN5t0zYFNC9Tap1093K9x20JWAryvTpJTMe-NurHfnDGA3vtsCv">
+</div>
+<div class="flex-1 space-y-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Product</p>
+<p class="text-body-md font-body-md text-on-surface font-medium">Wireless Noise Cancelling Headphones</p>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Return ID</p>
+<p class="text-body-md font-body-md text-on-surface font-medium">RET-1024</p>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Reason</p>
+<p class="text-body-md font-body-md text-on-surface font-medium">Damaged product</p>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Requested On</p>
+<p class="text-body-md font-body-md text-on-surface font-medium">Aug 21, 2026</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Carrier Info Card -->
+
+</section>
+</main>
+<!-- Floating Toast Notification -->
+<div class="fixed bottom-margin-desktop left-1/2 transform -translate-x-1/2 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl shadow-lg flex items-center gap-4 z-[100] transition-transform duration-500 translate-y-0 opacity-100 translate-y-12 opacity-0" id="toast" style="display: none;">
+<span class="material-symbols-outlined text-inverse-primary" data-icon="info">info</span>
+<div>
+<p class="text-label-md font-label-md font-bold">Return Updated</p>
+<p class="text-body-sm font-body-sm">Your return is now In Transit.</p>
+</div>
+<button class="ml-4 text-outline hover:text-inverse-on-surface transition-colors" onclick="document.getElementById('toast').style.display='none'">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Script to simulate toast fading out after some time -->
+<script>
+        setTimeout(() => {
+            const toast = document.getElementById('toast');
+            if(toast) {
+                toast.classList.add('translate-y-12', 'opacity-0');
+                setTimeout(() => { toast.style.display = 'none'; }, 500);
+            }
+        }, 5000);
+    </script>
+
+
+</body></html>

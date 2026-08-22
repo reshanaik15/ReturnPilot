@@ -4,6 +4,8 @@
 
 This document captures **every significant decision** made during the ReturnPilot backend architecture migration. Each decision includes the rationale, alternatives considered, and trade-offs.
 
+> **⚠️ Status update (2026-08-21, hour ~2 of the hackathon):** Decisions 1–16 below describe the original FastAPI + SQLAlchemy + Postgres (Supabase) backend. Following mentor feedback, the team is now spike-testing a pivot to viaSocket's no-code AI Agent + Table stack — see **Decision 17** below and `.kiro/specs/backend-architecture-migration/tasks.md` (Phase 2) for the task breakdown. Decisions 1–16 remain the documented fallback if the spike fails; the original FastAPI backend is left as-is, not deleted.
+
 ---
 
 ## Decision 1: FastAPI over Node.js/Express for Backend
@@ -554,6 +556,77 @@ op.create_index('idx_returns_status', 'returns', ['status'])
 **Trade-offs:**
 - ✅ **Pro**: Clear purpose per migration, selective application, better rollback
 - ❌ **Con**: More files to manage (but better organization)
+
+---
+
+## Decision 17: Pivot from Custom FastAPI Backend to viaSocket AI Agent + Table (Conditional)
+
+**Decision:** Spike-test replacing the custom FastAPI + SQLAlchemy + Postgres + Claude tool-use-loop backend (Decisions 1–16) with viaSocket's no-code AI Agent (MCP gateway) + viaSocket Table, gated on a specific validation check. Not yet finalized — see status below.
+
+**Why This Is On The Table**
+
+1. **Mentor feedback**: on-site mentors questioned why the team was self-hosting a Postgres database and a custom agent loop when viaSocket — the track's sponsor tool — offers both a Table (hosted data store) and an AI Agent node (LLM orchestration via an MCP gateway) that could replace that layer entirely.
+2. **Track sponsor incentive**: viaSocket is the NextGenAI track sponsor; deep, real use of it (not just notifications) supports the "Best Use of viaSocket" award.
+3. **Official track rules** (Problem 02-07, provided by Walkover) explicitly scope viaSocket as optional help with "connecting, triggering, and workflow layer" — **not a judging requirement**. This decision is being evaluated on its technical and time-cost merits, not because it's mandated.
+
+**The one hard constraint that gates this decision**
+
+The track rules require: *"Solutions should use AI for reasoning, planning, tool use, retrieval, or agentic execution. Using an LLM only as a conversational front end is not sufficient on its own."* ReturnPilot's problem statement additionally requires a visible reasoning-trace panel proving genuine multi-step reasoning, not a static/scripted response. viaSocket's public documentation does not confirm whether its AI Agent node exposes an inspectable step-by-step tool-call/reasoning trace, or only a final answer — this is unverified as of this writing.
+
+**Validation gate (spike test) — must pass before any further Phase 2 work:**
+Build the smallest possible viaSocket flow: Webhook trigger → AI Agent step (Claude, one tool: find rows on a small test Orders table) → Webhook response. Inspect the raw JSON response.
+- **PASS** — response includes which tool was called, its inputs/results, and the reasoning behind the choice → proceed with the full pivot (Phase 2 tasks).
+- **FAIL** — response is only a final text answer with no inspectable intermediate steps → do not pivot; resume Tasks 5–18 on the original FastAPI backend (Decisions 1–16 stand), and use viaSocket only for notifications + the trigger/webhook layer.
+
+**What changes if the pivot proceeds:**
+- Tasks 4–7 and most of 9 (config, tool functions, agent loop, notifications, routers) become viaSocket workflows instead of Python code.
+- The Postgres schema (Decision 2, 7, 8, 9 — already designed) is re-implemented as viaSocket Table rows with the same columns/relationships; the data model itself does not change, only where it's hosted and how it's queried (an AI-Agent tool call via MCP, instead of a SQLAlchemy query in `services/`).
+- Return policies (static, same for every customer) move into the AI Agent's system prompt as context rather than a queried table, per the mentor's ChatGPT-memory analogy. Customer/order data (per-customer, must be looked up live) stays a tool-call-driven lookup — functionally identical to `search_orders`, just executed through viaSocket Table instead of FastAPI + SQLAlchemy.
+- The React frontend and its `api.js` contract are unaffected in shape — only the request URLs move from FastAPI routes to viaSocket webhook URLs, provided response JSON shapes are matched exactly.
+
+**What does not change regardless of outcome:** the frontend build, the data model design, and the 3-stage return lifecycle (Decision — see product decisions doc) are all pivot-agnostic.
+
+**Status:** ✅ Spike test PASSED (2026-08-21/22) — pivot confirmed, now building the full agent natively in viaSocket. See "Decision 17 addendum" below for what the spike actually found and the corrected build plan.
+
+---
+
+## Decision 17 Addendum: Spike Result and Corrected viaSocket Architecture
+
+**Spike verdict: PASS.** viaSocket genuinely supports agentic tool-use with a visible reasoning trace — but not through the node type the team initially assumed.
+
+**Critical architectural correction — two different things both surfaced when searching "AI Agent" in viaSocket, only one is real agentic tool-use:**
+- **"Generate Response"** (an action inside regular Flows) = plain text completion, **no tool-attachment support at all**. This is what the team originally built against in the first failed attempts — it's a dead end for this use case, not a config problem.
+- **"AI Agents"** (a separate top-level sidebar section, *not* inside Flows) = the real capability. Has a dedicated Tools/Connectors tab where actions are attached via **"Let AI run the App"** (the AI itself decides whether/when to call the tool, based on reasoning) as opposed to **"Configure Actions"** (a hardcoded pipeline step that runs unconditionally — this was the bug in the first spike attempt, where an "Add Records" action fired on every request regardless of intent).
+
+**Confirmed working setup:**
+- Agent: "ReturnPilot Order Resolver," model = **OpenAI gpt-4o** (not Claude/OpenRouter — switching provider is what actually resolved the earlier 404/guardrail error, which turned out to be unrelated to the "Generate Response" dead end; it was specific to the OpenRouter node). **Open question carried forward: team's original stack decision specifies Claude for agent orchestration — need to decide whether to switch this agent to Anthropic Claude as the provider before treating this as final, or explicitly re-decide to use GPT-4o and update the stack description accordingly.**
+- Storage: viaSocket's native **Databases** feature (workspace "DBdash," database "scratch") — not Supabase, not the generic "viaSocket Table" product page referenced earlier; same underlying idea (hosted rows/columns), different product surface within viaSocket than initially researched.
+- Table `orders` (order_id, customer_id, item_name, category, price, purchase_date), 6 seed rows.
+- Tool: **Get Table Rows** on `orders`, attached via "Let AI run the App."
+- System prompt (Role/Goal/Instruction structure) forces a tool call before answering, requires visible reasoning, and requires a clarifying question on ambiguous matches — confirmed working against a typo ("headpjones"), a clean match ("shoes"), and a genuinely ambiguous case (2 "electronics" matches → agent asked which one instead of guessing).
+
+**Remaining build (tracked as Phase 2 Tasks 20a–22 in `tasks.md`):** add `return_policy` and `returns` tables/tools, extend the system prompt to chain order lookup → policy check → eligibility statement → return creation, then full end-to-end test.
+
+**Team submission strategy:** one teammate builds the FastAPI/Claude backend in parallel; decide later whether to submit one merged path or both (FastAPI as the primary demo, viaSocket build specifically as the "Best Use of viaSocket" award entry). This is a live open decision, not yet finalized.
+
+---
+
+## Decision 17 Addendum 2: Full Build Complete — Frontend, Ops Dashboard, Declined Status
+
+**Status as of 2026-08-23: core system is feature-complete and largely working, with known unresolved issues (see below and `VIASOCKET_ARCHITECTURE.md`).**
+
+The full viaSocket backend architecture (all 3 flows, prompt text, table schemas, verified behaviors, and known bugs) is now documented separately in `VIASOCKET_ARCHITECTURE.md` at the repo root — that file is the authoritative reference going forward, not this addendum.
+
+**Frontend:** fully rebuilt in React (`frontend/src/`) — Login (customer dropdown) → Chat (live-wired, reasoning trace panel with staggered reveal, inline "Return Created" ticket card, markdown rendering) → My Returns (live-fetched, not mocked) → Tracker (real data, 4-stage progress). A separate standalone **Ops/Company Dashboard** (`frontend/public/ops-dashboard.html`) was built outside the React app per the team's explicit choice to keep it separate from the customer-facing app — it merges per-customer return data client-side (no unfiltered "all returns" backend flow exists) and lets staff advance a return's status, which triggers the corresponding notification.
+
+**New capability — declined-return tracking:** originally, an ineligible return request created no database record at all (silent decline in chat only). This was changed so every request — eligible or not — creates a row, with `status: "declined"` and the specific reason for ineligible ones. Declined returns are filtered out of the customer-facing My Returns view (`frontend/src/api.js`) since nothing was actually returned, but are shown, greyed out, on the Ops Dashboard for internal visibility.
+
+**Real bugs found and fixed during this build (see `VIASOCKET_ARCHITECTURE.md` for full detail), each independently verified via live testing, not assumed fixed:**
+- Agent asked customers for their own internal order ID instead of reusing the ID it already looked up — root cause was a tool output-field configuration gap (the `orders` lookup tool wasn't returning `order_id` at all), not a prompt problem.
+- The `status` column was once found containing a full sentence instead of a clean enum value — prompt now explicitly locks it to 4 literal words.
+- A Webhook Response node contained raw, hand-typed `${context.res...}` template syntax instead of the platform's real variable picker, causing a 400 on every call to the Advance Return Status flow — fixed, verified.
+
+**Still unresolved (do not claim these are fixed):** Policies table returns inconsistent window values for Electronics across separate live calls (10 vs. 15 days); response latency is consistently 25–46 seconds; all notification emails go to one hardcoded test inbox rather than real customer emails; the agent model is OpenAI gpt-4o, not Claude as originally specified in the stack decision.
 
 ---
 

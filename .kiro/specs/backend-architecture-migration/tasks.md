@@ -4,6 +4,8 @@
 
 This implementation plan transforms the single-file React prototype (ReturnPilot.jsx) into a production-ready three-tier architecture with React frontend, FastAPI (Python) backend, and Supabase PostgreSQL database. The migration focuses on separating concerns, securing credentials, persisting data, and maintaining the existing UI experience while implementing server-side agent orchestration.
 
+> **⚠️ Status update (2026-08-21):** Original `ReturnPilot.jsx` prototype was deleted (deemed too basic) — the frontend is now a fresh build, not a migration. Tasks 1–4 below are done and stay done. Tasks 5–18 are **on hold pending a viaSocket spike test** — see **Phase 2: viaSocket Migration** at the bottom of this file for the current active task list and why. See `DECISIONS.md` Decision 17 for full rationale. Do not start Tasks 5–18 as written below until the spike test fails (in which case they resume as-is on the existing FastAPI backend, which has been left intact as the fallback).
+
 ## Tasks
 
 - [x] 1. Set up project structure and configuration
@@ -63,6 +65,8 @@ This implementation plan transforms the single-file React prototype (ReturnPilot
     - Implement GET /api/health endpoint returning status, database connection state, timestamp
     - Add global exception handlers for unhandled errors and validation errors
     - _Requirements: 5.9, 15.5, 16.1, 16.2_
+
+> **Tasks 5–18 below: ON HOLD.** Paused pending the viaSocket spike test (Phase 2, Task 19). Resume from here only if the spike fails — otherwise the equivalent work happens as viaSocket flows in Phase 2. Kept as-is (not deleted) so the FastAPI path stays buildable as a fallback.
 
 - [ ] 5. Implement backend tool functions (services/tools.py)
   - [ ] 5.1 Implement search_orders tool
@@ -338,3 +342,89 @@ This implementation plan transforms the single-file React prototype (ReturnPilot
   ]
 }
 ```
+
+---
+
+## Phase 2: viaSocket Migration (active plan as of 2026-08-21)
+
+Replaces Tasks 5–18 above, conditional on Task 19 passing. See `DECISIONS.md` Decision 17 for full rationale. Owners map to the 4-person team: **You** (UX/frontend lead), **Cyber** (cybersecurity/data teammate — tools + agent loop), **Jr-A** and **Jr-B** (juniors — flows/testing, notifications/testing).
+
+- [x] 19. **Spike test — validate viaSocket reasoning-trace capability** — *Owner: Cyber* — ✅ **PASSED (2026-08-21/22)**
+  - First attempt (Flows → "Generate Response" action + a hardcoded "Add Records" step) failed: that node type is plain text completion with no tool-attachment support, and the Add Records step ran unconditionally — a dead end, not a config bug.
+  - Real capability found under the separate **"AI Agents"** sidebar section (not inside Flows): has a Tools/Connectors tab, actions attached via **"Let AI run the App"** are genuinely called at the model's own discretion (vs. "Configure Actions," which is a hardcoded pipeline step — that was the original bug).
+  - Confirmed: agent correctly forced a tool call before answering, handled a typo ("headpjones" → shoes), and asked a clarifying question on a genuinely ambiguous 2-match case instead of guessing.
+  - **Open item carried forward:** the working agent uses **OpenAI gpt-4o**, not Claude — the original stack decision specifies Claude for agent orchestration. Decide explicitly whether to switch the provider to Anthropic Claude before treating this as submission-final, or formally update the stack decision to gpt-4o.
+  - See `DECISIONS.md` Decision 17 Addendum for full detail.
+  - _Blocked: nothing further — proceed to Task 20_
+
+### Now building for real (native viaSocket "AI Agents," not the Flow-based approach originally assumed in Tasks 20–23 below):
+
+- [x] 20. **Storage + first table/tool, confirmed working** — *Owner: Cyber*
+  - Storage is viaSocket's native **Databases** feature (workspace `DBdash`, database `scratch`) — not the generic "viaSocket Table" product researched earlier, not Supabase. Functionally similar (hosted rows/columns), different product surface within viaSocket than originally planned.
+  - Table `orders` (order_id, customer_id, item_name, category, price, purchase_date), 6 seed rows — confirmed correct after an earlier misconfiguration (tool was pointed at a stray "Trial" table with the wrong schema; fixed via a fresh connection)
+  - Tool: **Get Table Rows** on `orders`, attached via "Let AI run the App"
+  - System prompt in place (Role/Goal/Instruction structure) — forces tool call before answering, requires visible reasoning, requires a clarifying question on ambiguous matches
+
+- [x] 20a. **Return policy data source** — *Owner: Cyber* — ⚠️ **REVERSED AGAIN, 2026-08-23 — read this whole entry before touching this**
+  - History: originally planned as a live `return_policy` table (Task 20a as first written) → corrected 2026-08-22 to static prompt text per mentor guidance (efficiency + reliability, since it's identical for every customer) → **the team reversed this again and kept a live `Policies` table** ("my agent is checking policies from table," explicit decision). Static text was tried once as a fix for a real bug (see below) but was reverted at the team's request without adopting it.
+  - **Current state (as of 2026-08-23): live `Policies` table (`category`, `window_days`, `final_sale_excluded`, `exclusions`), queried via a Get Table Rows tool.** This is the team's deliberate final choice, not an oversight — do not "fix" this back to static text without asking first.
+  - **Known real bug, directly observed:** the Policies lookup returned "unavailable" for a real category once, and the agent **wrongly approved a return that should have been declined** — the exact failure mode static text would have prevented entirely. A safety-net prompt instruction was added ("never default to eligible if the lookup fails") as a mitigation, not a root-cause fix. The underlying table/tool reliability issue (suspected field-mapping, same class of bug as the order_id issue below) was never diagnosed.
+  - **Also unresolved:** the Electronics category's `window_days` has returned inconsistent values (10 vs. 15) across separate live calls.
+  - Full current prompt text and verification history: `VIASOCKET_ARCHITECTURE.md`.
+
+- [x] 20b. **Add `returns` table + tool** — *Owner: Cyber* — ✅ **BUILT & CONFIRMED (2026-08-22), but creating returns with NO policy gate yet — see 20a below**
+  - Actual column format (exact, case-sensitive): `return_id` (auto-increment), `customer_name` (⚠️ misleading name — actually stores `customer_id` e.g. `"cust-002"`, rename later if time allows), `order_id` (numeric, must match Orders table's `order_id`, never free text), `status` (lowercase exact strings only: `"initiated"` | `"shipped"`/`"in_transit"` | `"refunded"`), `reason_`, `createdat`
+  - Tool: **Add Records To Table** on `returns`, attached via "Let AI run the App" — correctly gated by the agent's own decision (confirmed: it checks for an existing return on the same order before creating a duplicate)
+  - **Confirmed working:** resolves vague category requests ("return my electronics"), asks clarifying questions on multiple matches, remembers context across turns within a customer_id (e.g. "the second one" correctly resolves from an earlier list), creates return rows correctly on confirmation, checks for existing returns first, reasoning trace genuinely reflects real tool calls
+  - **Known fragile points to spot-check periodically, not yet root-caused:**
+    - One test produced a malformed row (`order_id` as text instead of numeric, `status` = `"Pending"` — not in the allowed lowercase enum, which will break exact-match logic in the advance-status flow, Task 23a) before a prompt fix; later tests are clean, but format drift under unusual phrasing hasn't been proven eliminated
+    - No `updated_at` tracking yet — needed before Task 23a's lifecycle advancement can work
+    - Agent sometimes re-fetches the full Orders list even when already fetched earlier in the same conversation — token/latency cost, not a correctness bug, but likely a contributing factor to the ~25-35s response times noted in Task 23
+
+- [x] 21. **Extend the system prompt to chain the full sequence, gated on real policy data** — *Owner: Cyber* — ✅ built, working when the Policies lookup succeeds (see 20a's caveats)
+  - Full chain confirmed live: find order → check policy → state eligibility with visible reasoning → if eligible, create with status "initiated" → if not, create with status "declined" + reason → confirm to customer. Exact current prompt text: `VIASOCKET_ARCHITECTURE.md`.
+
+- [x] 22. **End-to-end test inside viaSocket** — *Owner: Cyber* — ✅ both branches independently verified via direct `curl` testing
+  - Eligible path: order found, policy checked, return created, `[RETURN_CREATED]` emitted, confirmed via a real re-fetch of the table.
+  - Ineligible path: order found, policy checked, declined with a real reason, row created with `status: "declined"`, correctly no `[RETURN_CREATED]` block.
+
+- [x] 23. **Determine how the frontend calls this agent** — *Owner: You + Cyber (joint)* — ✅ **RESOLVED (2026-08-22)**
+  - The AI Agent was wrapped in a Flow (Webhook trigger → agent → Webhook Response), giving a plain POST endpoint: `https://flow.sokt.io/func/scriJDWDZGHv`
+  - Request: `{ "customer_id": "cust-001", "message": "..." }` (or `customer_name`, confirmed both work depending on which field the row is keyed on) — no conversation history needed, memory is server-side keyed by customer
+  - Response: a **plain JSON-encoded string** (not an object) of the form `"[REASONING_TRACE]\n1. ...\n[/REASONING_TRACE]\n\n<customer-facing message>"`; the trace block is sometimes absent on simple follow-ups — parsing must handle both. Working `api.ts` (`sendMessage()` + `parseAgentResponse()`) is ready and tested against real responses — see chat log for the code
+  - **Verified via direct testing (2026-08-21/22):**
+    - Confirmed genuine reasoning trace present, correctly reflecting real tool calls (not fabricated)
+    - Found and fixed a real bug: the agent was passing date filters into the lookup tool when the customer used relative-date language ("yesterday," "a few days ago"), causing false "no orders found" on **cold, first-touch** queries — 2/2 failed before the fix. Fixed via a system-prompt change: always fetch all of a customer's orders by ID only, do date-matching in the agent's own reasoning afterward, never in the tool call. Re-tested cold against a never-touched customer (Amara Chen) with vague date language ("headphones from yesterday") — passed cleanly post-fix.
+    - **Important testing gotcha for the team:** because memory is server-side per customer_id, re-testing the same customer_id after an earlier message is NOT an independent trial — a "pass" can be memory carryover from a prior warm-up message, not the agent resolving it cold. Always test fixes against a customer_id/name that has never been messaged in that session.
+  - **Still open:** response time is consistently ~25–35s per message, cold or warm. Too slow for a live demo as-is — needs either a visible progressive "thinking" state (reasoning trace displayed as it becomes available, if the flow can be made to stream) or, if it can't stream, at least an honest animated loading state so a 30s wait doesn't read as broken.
+  - _Depends on: 22_
+
+- [ ] 23a. **Build the 4 CRUD flows (no AI needed)** — *Owner: Jr-A*
+  - `getReturn`, `advanceReturn` (used by the ops dashboard's manual status buttons), `reviewReturn`, `getDashboardReturns`
+  - These are plain data reads/updates against the `returns`/`orders` tables (Task 20b) — Flow-based Webhook → Database action → Webhook Response is fine here, since none of these need agentic reasoning, only Task 22's agent itself does
+  - `advanceReturn`/`reviewReturn` must be the single source of truth both the customer tracker and ops dashboard react to (per product decisions — no divergent update paths)
+  - _Depends on: 20b_
+
+- [x] 24. **Wire notification triggers** — *Owner: Jr-B* — ✅ built, ⚠️ significant caveat
+  - Fires on `initiated` (from the main agent flow) and on `shipped`/`refunded` (from the Advance Return Status flow, built 2026-08-23 at `https://flow.sokt.io/func/scriWZw9Q5vC`)
+  - **Caveat: every notification goes to one hardcoded test inbox (`reshanaik15@gmail.com`), not the real customer's email.** There is no per-customer email lookup anywhere in the system. This has been true since the very first "initiated" email, not a regression.
+
+- [x] 25. **Point frontend at viaSocket endpoints** — *Owner: You* — ✅ done
+  - `frontend/src/api.js` calls the three real viaSocket webhook URLs directly (agent, Get My Returns, Advance Return Status) — see `VIASOCKET_ARCHITECTURE.md` for exact endpoints/contracts
+  - CORS confirmed open on all three from a browser origin
+
+- [x] 26. **Checkpoint — end-to-end test** — *Owner: Jr-A + Jr-B* — 🟡 mostly done, with real known gaps, not fully green
+  - Verified via direct testing: login → chat → agent resolves order + checks policy + creates return (or correctly declines) → inline chat card → My Returns (live-fetched) → Tracker (real 4-stage data) → Ops Dashboard advance-status → notification fires
+  - **Not verified:** no click-through testing has happened in an actual browser this session (React build passes, endpoints tested via `curl`, but no one has watched the actual UI render). Also unresolved: Electronics policy-window inconsistency, 25–46s latency on every message, and the hardcoded notification inbox above — see `VIASOCKET_ARCHITECTURE.md`'s "Known unresolved issues" for the full list before treating this as demo-ready.
+
+### Post-Phase-2 addition: declined-return tracking (not in the original plan, added 2026-08-23)
+
+Originally an ineligible request created no database record at all. Changed so every request creates a row (`status: "declined"` with a reason, for ineligible ones), filtered out of the customer-facing My Returns view but shown (greyed out) on the Ops Dashboard. See `DECISIONS.md` Decision 17 Addendum 2 and `VIASOCKET_ARCHITECTURE.md` for the exact prompt change and verification.
+
+### Ops/Company Dashboard (not in the original Phase 2 task list, built 2026-08-23)
+
+Built as a standalone file, `frontend/public/ops-dashboard.html`, deliberately separate from the React customer-facing app per the team's explicit choice. No unfiltered "all returns" backend flow exists yet — it works around this by calling Get My Returns once per hardcoded known customer name and merging client-side, which is a demo-scale workaround, not something that scales past the 3 seeded customers.
+
+**Team submission strategy (open decision):** one teammate is building the FastAPI/Claude backend from Tasks 5–18 in parallel. Decide later whether to submit one merged path or both — e.g. FastAPI as the primary demo, this viaSocket build specifically entered for "Best Use of viaSocket."
+
+**Fallback safeguard (applies throughout Phase 2):** the FastAPI backend from Phase 1 is left untouched, not deleted. If any Phase 2 task stalls badly, the team can drop back to Task 5 onward in the original plan without having lost the schema/decisions work.

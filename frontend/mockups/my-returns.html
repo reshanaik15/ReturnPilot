@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Returns - ReturnEase AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#0f62fe",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-low": "#f3f4f6",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "outline": "#737687",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "primary": "#004ccd",
+                      "primary-fixed": "#dbe1ff",
+                      "inverse-primary": "#b4c5ff",
+                      "tertiary": "#7b4d00",
+                      "on-tertiary-container": "#fff2e7",
+                      "on-background": "#191c1e",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-container": "#9c6300",
+                      "error-container": "#ffdad6",
+                      "background": "#f8f9fb",
+                      "inverse-surface": "#2e3132",
+                      "surface": "#f8f9fb",
+                      "on-secondary-fixed": "#07006c",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#6063ee",
+                      "surface-container-highest": "#e1e2e4",
+                      "on-secondary-fixed-variant": "#2f2ebe",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#c3c6d8",
+                      "surface-container": "#edeef0",
+                      "on-tertiary-fixed": "#2a1700",
+                      "on-surface-variant": "#424656",
+                      "secondary": "#4648d4",
+                      "surface-tint": "#0052dd",
+                      "tertiary-fixed": "#ffddb8",
+                      "secondary-fixed": "#e1e0ff",
+                      "on-primary-fixed": "#00174c",
+                      "on-primary-fixed-variant": "#003da9",
+                      "secondary-fixed-dim": "#c0c1ff",
+                      "inverse-on-surface": "#f0f1f3",
+                      "on-error-container": "#93000a",
+                      "surface-variant": "#e1e2e4",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-error": "#ffffff",
+                      "on-secondary-container": "#fffbff",
+                      "surface-dim": "#d9dadc",
+                      "surface-bright": "#f8f9fb",
+                      "on-primary-container": "#f3f3ff",
+                      "surface-container-high": "#e7e8ea",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#191c1e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "margin-desktop": "40px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col md:flex-row">
+<!-- Desktop SideNavBar -->
+<nav class="hidden lg:flex flex-col w-60 fixed h-full py-6 bg-surface-container-lowest dark:bg-surface-dim border-r border-outline-variant dark:border-outline z-40">
+<div class="px-6 mb-8 flex flex-col gap-2">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container-high mb-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-outline" data-icon="account_circle">account_circle</span>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">Welcome back</h2>
+<p class="text-label-md font-label-md text-on-surface-variant">Reliable Expert AI</p>
+</div>
+</div>
+<div class="flex-grow flex flex-col gap-1 px-4">
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="text-label-md font-label-md">AI Assistant</span>
+</a>
+<!-- Active -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container font-semibold rounded-lg mx-2 scale-98 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_return" style="font-variation-settings: 'FILL' 1;">assignment_return</span>
+<span class="text-label-md font-label-md">My Returns</span>
+</a>
+</div>
+<div class="px-6 mt-auto">
+<button class="w-full bg-primary text-on-primary hover:bg-[#003da9] transition-colors py-3 rounded-lg text-label-md font-label-md flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                New Return
+            </button>
+</div>
+</nav>
+<!-- Mobile TopNavBar -->
+<header class="md:hidden sticky top-0 z-50 flex justify-between items-center w-full px-margin-mobile h-16 shadow-sm dark:shadow-none bg-surface dark:bg-inverse-surface transition-all">
+<a class="text-headline-lg-mobile font-headline-lg-mobile font-extrabold text-primary dark:text-inverse-primary" href="#">ReturnEase AI</a>
+<div class="flex items-center gap-4">
+<a class="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</a>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop lg:pl-[280px] py-8 md:py-12">
+<!-- Page Header -->
+<div class="mb-10">
+<h1 class="text-display-lg font-display-lg text-on-background mb-2">My Returns</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant">View and track your return requests.</p>
+</div>
+<!-- Returns List -->
+<div class="flex flex-col gap-4">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:border-outline transition-colors shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-6 md:items-center justify-between">
+<div class="flex-grow flex flex-col md:flex-row gap-6">
+<div class="w-16 h-16 rounded-lg bg-surface-container-low flex-shrink-0 flex items-center justify-center border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A detailed close-up product shot of sleek, modern wireless noise cancelling headphones in a high-end minimalist setting. The headphones are matte black with premium metallic accents, resting on a clean white surface. High-key soft white lighting enhances the sleek curves and premium textures. The overall aesthetic is clean, professional, and aligns with modern SaaS UI photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnMutk2iUdShSHEEfIbiwHkmmH-CScjVWtapLebVwus529QkGH7H6Wpf7ef6nyc2qtszqrVfiW2mOGnQVidmg8suFuR8q9UrzOj8_cpIQwy6D0gV7hx8Yq5YbhAEOnITqnm7PDy5rFaKEuHYpERSVxP9mjbFFSGqPGcqA9aRzulOvqrhvMDNgaAKU4o9wS7kr_8LLEfNj1Zm-6b5I1_gdPf8MSNrq_Ym1ne0S0CZHHed0_LgM84ilM"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3 flex-wrap">
+<h3 class="text-headline-md font-headline-md text-on-background">Wireless Noise Cancelling Headphones</h3>
+<span class="px-2 py-1 rounded text-label-sm font-label-sm bg-[#e1e0ff] text-[#07006c]">ID: RET-1024</span>
+</div>
+<div class="flex items-center gap-4 text-body-sm font-body-sm text-on-surface-variant mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span> Aug 21, 2026</span>
+<span class="flex items-center gap-1 bg-[#dbe1ff] text-[#00174c] px-2 py-0.5 rounded-full text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="local_shipping">local_shipping</span> In Transit
+                            </span>
+</div>
+<p class="text-body-sm font-body-sm mt-3 text-on-surface-variant max-w-2xl bg-surface p-3 rounded-lg border border-surface-variant">
+                            "Reported as damaged. Return request successfully initiated."
+                        </p>
+</div>
+</div>
+<div class="flex-shrink-0 mt-4 md:mt-0">
+<button class="w-full md:w-auto px-6 py-2.5 bg-secondary-fixed text-on-secondary-fixed hover:bg-secondary-fixed-dim transition-colors rounded-lg text-label-md font-label-md flex items-center justify-center gap-2">
+                        Track Return
+                        <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:border-outline transition-colors shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-6 md:items-center justify-between">
+<div class="flex-grow flex flex-col md:flex-row gap-6">
+<div class="w-16 h-16 rounded-lg bg-surface-container-low flex-shrink-0 flex items-center justify-center border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A high-quality product photo of a modern smart watch with a clean digital face, resting on a minimalist marble surface. Soft, diffused lighting creates a premium, high-tech look. The watch has a dark silicone band and a sleek metal casing. The aesthetic matches a clean, modern e-commerce interface with subtle depth and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCpF98QiIfE_-6lR7bCcrvgUGIJKp4pr7g3Z2F0H7zytwMsZcwEGpD6YIb0CMH-egC85t1YU27kyn2sS6NOAWl90cgqgnuhIdVvc3j8WKiAdEIIBebZ0C46hCPav8zr5H9j5_utP383CzMD3F5dxiYZsyY0QTs9b-OGpMqZ-9m8Xe_OP4M6HHmzY1iUbWRogj9oVXF6piqFgXVjYrHFCmSfSeQF6qTz7vYEcXoFuDgu1Um6OIynGze"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3 flex-wrap">
+<h3 class="text-headline-md font-headline-md text-on-background">Smart Watch</h3>
+<span class="px-2 py-1 rounded text-label-sm font-label-sm bg-[#e1e0ff] text-[#07006c]">ID: RET-0982</span>
+</div>
+<div class="flex items-center gap-4 text-body-sm font-body-sm text-on-surface-variant mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span> July 15, 2026</span>
+<span class="flex items-center gap-1 bg-[#dcfce7] text-[#166534] px-2 py-0.5 rounded-full text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span> Refunded
+                            </span>
+</div>
+<p class="text-body-sm font-body-sm mt-3 text-on-surface-variant max-w-2xl bg-surface p-3 rounded-lg border border-surface-variant">
+                            "Incorrect item received. Return was processed successfully."
+                        </p>
+</div>
+</div>
+<div class="flex-shrink-0 mt-4 md:mt-0">
+<button class="w-full md:w-auto px-6 py-2.5 bg-surface-container-low text-on-surface hover:bg-surface-container-highest transition-colors rounded-lg text-label-md font-label-md border border-outline-variant flex items-center justify-center gap-2">
+                        View Details
+                    </button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:border-outline transition-colors shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-6 md:items-center justify-between">
+<div class="flex-grow flex flex-col md:flex-row gap-6">
+<div class="w-16 h-16 rounded-lg bg-surface-container-low flex-shrink-0 flex items-center justify-center border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A pristine product shot of a sleek, cylindrical bluetooth speaker in slate grey. The speaker is positioned against a subtle off-white background, lit with soft, directional light that highlights its textured mesh grille. The composition is clean, centered, and highly professional, fitting perfectly within a modern SaaS dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyWMjN7NC4niORUONZBCEjWKqSRDsPT2SyLgpZKBaJYpL4xtUEZrlYglFcE-6aO7CQG-W7LgKH2iSEc9vBAAV6fwcvaPkGQAGr_RBQbAaTuIjbFLPmQ4ocnSoW9u-BTE_BQWZkMdyfYnREfpvfojlIfKrD8cPTT4I-uj5o-kHhs8mpwsiFVg9VNNbIBsvyiE8MGwe_foueYzW2SG6nuvAYbeKwOPu8X75zOl6LCCwaFVZesIJCymnf"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3 flex-wrap">
+<h3 class="text-headline-md font-headline-md text-on-background">Bluetooth Speaker</h3>
+<span class="px-2 py-1 rounded text-label-sm font-label-sm bg-[#e1e0ff] text-[#07006c]">ID: RET-1005</span>
+</div>
+<div class="flex items-center gap-4 text-body-sm font-body-sm text-on-surface-variant mt-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span> Aug 10, 2026</span>
+<span class="flex items-center gap-1 bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded-full text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="pending">pending</span> Requested
+                            </span>
+</div>
+<p class="text-body-sm font-body-sm mt-3 text-on-surface-variant max-w-2xl bg-surface p-3 rounded-lg border border-surface-variant">
+                            "Customer reported a defective product."
+                        </p>
+</div>
+</div>
+<div class="flex-shrink-0 mt-4 md:mt-0">
+<button class="w-full md:w-auto px-6 py-2.5 bg-secondary-fixed text-on-secondary-fixed hover:bg-secondary-fixed-dim transition-colors rounded-lg text-label-md font-label-md flex items-center justify-center gap-2">
+                        Track Return
+                        <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom NavBar (Visible only on md:hidden) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border-t border-outline-variant z-50 flex justify-around items-center h-16 pb-safe">
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="forum">forum</span>
+<span class="text-[10px] font-medium">Assistant</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-primary font-bold" href="#">
+<div class="bg-primary-container text-on-primary-container px-4 py-1 rounded-full mb-1">
+<span class="material-symbols-outlined" data-icon="assignment_return" style="font-variation-settings: 'FILL' 1;">assignment_return</span>
+</div>
+<span class="text-[10px] font-medium">Returns</span>
+</a>
+</nav>
+</body></html>

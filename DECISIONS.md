@@ -557,6 +557,57 @@ op.create_index('idx_returns_status', 'returns', ['status'])
 
 ---
 
+## Decision 17: Google AI Studio (Gemini) over Anthropic Claude for Orchestration & Vision
+
+**Decision:** Migrate the multi-agent orchestrator, NLP classification layer, and photo damage verification from direct Anthropic Claude API to Google AI Studio's OpenAI-compatible endpoint (using `gemini-3.5-flash-lite` as the primary model).
+
+**Why This Approach?**
+
+1. **Free Tier & Quota Separation**: Google AI Studio provides a free tier without a credit card, tracked separately *per model* — confirmed empirically during development when `gemini-3.6-flash`'s free tier turned out to cap at just 20 requests/day (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`, visible in the 429 error body), which a single chat turn can exceed on its own (NLP classification + multiple orchestrator tool-loop calls). Switching `GOOGLE_MODEL` to `gemini-3.5-flash-lite` picked up a separate, much larger daily quota untouched by the first model's usage — the per-model quota isolation is what makes that failover work, but don't assume any specific number without checking https://ai.dev/rate-limit, since these change and vary a lot by model.
+2. **Unified Vision Capabilities**: A single API key and endpoint covers text reasoning AND visual inspection (photo verification), simplifying our service layer.
+3. **OpenAI Compatibility**: Using the OpenAI-compatible chat completions endpoint allows us to standardise tool definitions, base64 payloads, and reasoning parameters using standard formats.
+4. **Empirical Performance**: Flash-lite is fast (under 2 seconds latency) and cheap, making it highly responsive for interactive user demos.
+
+**Alternatives Considered:**
+- **Anthropic Claude direct API**: Highly capable but requires upfront payment and has strict rate limits during development.
+- **OpenRouter**: Good failover option, but direct Google AI Studio endpoint offers better latency and zero intermediary fees.
+
+---
+
+## Decision 18: CLI Chat Interface for Development and Offline Demonstration
+
+**Decision:** Build a standalone, interactive Python CLI chat tool (`cli_chat.py`) that executes in the virtual environment.
+
+**Why This Approach?**
+
+1. **Bypass Browser/CORS Security Policies**: Local files opened directly via `file://` protocol are blocked by browsers because the origin is evaluated as `null`. A CLI bypasses this, making testing straightforward.
+2. **Real-time Terminal Tracing**: The CLI automatically prints out the multi-agent logic flow (`nlp_analyzer` classification, tool invocation names, etc.) in a human-readable trace immediately below each response.
+3. **Reliable Demo Fallback**: Eliminates UI rendering and network connection errors during live mentor judging.
+
+---
+
+## Decision 19: FastAPI/Gemini Backend as the Submission, Not the Parallel viaSocket Build
+
+**Decision:** This repository's FastAPI + Gemini backend (`backend/`) is the system submitted for judging. A parallel viaSocket-native build made by a teammate on a separate machine, using the same problem statement, was evaluated as a possible alternative or bonus demo and rejected for that role after direct testing.
+
+**Why This Approach?**
+
+1. **Verifiability**: viaSocket's "implementation" is no-code workflow configuration inside a third-party UI with no traditional source code — it cannot be verified from a git repository the way the judging methodology expects (see `VIASOCKET_ARCHITECTURE.md`).
+2. **Reliability under live testing**: Direct testing against the viaSocket build's production endpoints (both via browser and via `curl`) found a hard 58-second platform execution timeout on multi-step turns, at least one case of a write silently succeeding behind a shown error, weak duplicate-return handling, and — most seriously — a reproduced instance of the agent fabricating a complete, plausible transaction confirmation (reasoning trace, policy justification, claimed database write, claimed email) in 2.2 seconds with zero real tool execution behind it. Full detail and reproduction evidence in `VIASOCKET_ARCHITECTURE.md`.
+3. **No equivalent failure found in the actual backend**: The same category of end-to-end flow (order lookup → policy check → return creation → notification) has been extensively live-tested against `backend/` via `cli_chat.py` without finding an analogous silent-failure or fabrication case.
+
+**Alternatives Considered:**
+- **Lead with the viaSocket build as the main demo**: rejected — a live audience cannot distinguish a fabricated "success" response from a real one, which is disqualifying for a live demo regardless of how compelling the no-code pitch is.
+- **Present both builds as co-equal**: rejected for the write path specifically; a read-only walkthrough of viaSocket's tool-calling/reasoning-trace behavior remains a defensible talking point, documented as an alternative explored, not as a working product.
+
+**Trade-offs:**
+- ✅ **Pro**: The submitted system is the one that's actually been verified end-to-end, and is inspectable via source code as the judging methodology expects.
+- ❌ **Con**: The viaSocket track's sponsorship angle isn't showcased as the headline, only as a documented exploration.
+
+**References:** `VIASOCKET_ARCHITECTURE.md`
+
+---
+
 ## Summary of Key Architectural Decisions
 
 | Decision | Choice | Rationale |
@@ -571,6 +622,8 @@ op.create_index('idx_returns_status', 'returns', ['status'])
 | Migrations | Alembic | Version control, rollback support |
 | Session Management | Dependency Injection | Automatic cleanup, testable, no leaks |
 | Connection Pooling | 10 base, 20 overflow | Production-ready, handles burst traffic |
+| AI Orchestrator | Gemini (Google AI Studio) | OpenAI-compatible, free-tier, unified vision/text |
+| Developer Testing | Python CLI Chat | Bypasses browser CORS constraints, prints live trace |
 
 ---
 
@@ -581,4 +634,5 @@ op.create_index('idx_returns_status', 'returns', ['status'])
 - **Image Processing**: Add image compression service vs client-side compression
 - **Multi-Region Deployment**: Consider connection pooling per region vs global pool
 - **Audit Logging**: Add separate audit table vs extend existing tables with audit fields
+
 

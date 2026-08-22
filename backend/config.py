@@ -16,8 +16,10 @@ class Settings(BaseSettings):
     # Database
     database_url: str = os.getenv("DATABASE_URL", "")
 
-    # Claude API
-    anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
+    # Google AI Studio (Gemini) — free tier, one model covers agent
+    # orchestration, NLP classification, and photo verification (vision)
+    google_api_key: str = os.getenv("GOOGLE_API_KEY", "")
+    google_model: str = os.getenv("GOOGLE_MODEL", "gemini-3.5-flash-lite")
 
     # Supabase Storage
     supabase_url: str = os.getenv("SUPABASE_URL", "")
@@ -44,7 +46,7 @@ class Settings(BaseSettings):
         """
         required = {
             "DATABASE_URL": self.database_url,
-            "ANTHROPIC_API_KEY": self.anthropic_api_key,
+            "GOOGLE_API_KEY": self.google_api_key,
             "SUPABASE_URL": self.supabase_url,
             "SUPABASE_KEY": self.supabase_key,
         }

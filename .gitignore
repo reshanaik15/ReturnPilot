@@ -62,3 +62,7 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Internal reference only — never publish. Judges run their own copy
+# of the judging prompt; this is our own self-audit, not a submission artifact.
+JUDGING_REPORT.md

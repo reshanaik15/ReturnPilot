@@ -38,9 +38,14 @@ cp .env.example .env
 
 Required variables:
 - `DATABASE_URL`: Supabase PostgreSQL connection string
-- `ANTHROPIC_API_KEY`: Claude API key
+- `GOOGLE_API_KEY`: Google AI Studio API key (https://aistudio.google.com/apikey — free, no credit card)
 - `SUPABASE_URL`: Supabase project URL
 - `SUPABASE_KEY`: Supabase anon/service key
+
+Optional variables:
+- `GOOGLE_MODEL`: model used for agent orchestration, NLP classification, and photo verification (default `gemini-3.5-flash-lite`)
+
+Note: free-tier request quotas are per-model and per-day. If you see a 429 with `GenerateRequestsPerDayPerProjectPerModel` in the error, switch `GOOGLE_MODEL` to a different Gemini model rather than waiting for the daily reset — quotas are tracked separately per model. The heavier non-lite "flash" models have much smaller free daily quotas and add an internal "thinking" token overhead that flash-lite doesn't.
 
 ### 5. Run Development Server
 
@@ -67,12 +72,16 @@ backend/
 │   ├── dashboard.py        # GET /api/dashboard/returns
 │   └── policy.py           # GET /api/policy/check
 ├── models/
-│   ├── database.py         # SQLAlchemy models
+│   ├── __init__.py         # SQLAlchemy models
 │   └── schemas.py          # Pydantic request/response schemas
 └── services/
-    ├── agent_loop.py       # Claude tool-use orchestration
-    ├── tools.py            # Tool implementations
-    └── notifications.py    # Notification service integration
+    ├── tools.py            # Tool implementations (search_orders, check_policy, etc.)
+    ├── notifications.py    # Notification service integration (viaSocket)
+    ├── storage.py           # Supabase Storage (return-evidence photo uploads)
+    ├── nlp_analyzer.py      # Gemini-based reason/sentiment classification
+    ├── photo_analyzer.py    # Gemini vision-based damage verification
+    └── agents/
+        └── orchestrator.py  # Gemini tool-use orchestration loop
 ```
 
 ## Deployment

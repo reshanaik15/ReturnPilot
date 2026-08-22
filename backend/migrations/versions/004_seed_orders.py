@@ -4,12 +4,15 @@ Revision ID: 004_seed_orders
 Revises: 003_seed_return_policies
 Create Date: 2024-01-20 10:03:00.000000
 
-Seeds the orders table with 24 demo orders from the prototype:
+Seeds the orders table with 27 demo orders:
 - 8 orders for Amara Chen
 - 8 orders for Jordan Reyes
-- 8 orders for Priya Nair
+- 11 orders for Priya Nair (8 from the original prototype + 3 competing-brand
+  earbuds, added to demo search_orders' disambiguation: a vague "my buds"
+  request should surface all 3 and ask which one, while a brand-qualified
+  request like "my SoundWave buds" should resolve directly)
 
-These orders match the SEED_ORDERS data in ReturnPilot.jsx.
+The original 24 orders match the SEED_ORDERS data in ReturnPilot.jsx.
 The reference date for the prototype is 2026-08-16, and purchase dates
 are calculated as days before that date.
 """
@@ -86,6 +89,12 @@ def upgrade() -> None:
             {'id': 'ORD-3006', 'customer_id': priya_id, 'item_name': 'Wireless Charging Pad', 'category': 'Electronics', 'price': 29, 'purchase_date': days_ago(1), 'final_sale': False},
             {'id': 'ORD-3007', 'customer_id': priya_id, 'item_name': 'Cropped Denim Jacket', 'category': 'Apparel', 'price': 86, 'purchase_date': days_ago(37), 'final_sale': False},
             {'id': 'ORD-3008', 'customer_id': priya_id, 'item_name': 'Ceramic Dinner Set', 'category': 'Home', 'price': 72, 'purchase_date': days_ago(14), 'final_sale': False},
+
+            # Priya's 3 competing-brand earbuds — demo scenario for search_orders
+            # disambiguation (see module docstring)
+            {'id': 'ORD-3009', 'customer_id': priya_id, 'item_name': 'AirBeat Pro Buds', 'category': 'Electronics', 'price': 89, 'purchase_date': days_ago(1), 'final_sale': False},
+            {'id': 'ORD-3010', 'customer_id': priya_id, 'item_name': 'SoundWave Buds Elite', 'category': 'Electronics', 'price': 99, 'purchase_date': days_ago(2), 'final_sale': False},
+            {'id': 'ORD-3011', 'customer_id': priya_id, 'item_name': 'EchoFit Wireless Buds', 'category': 'Electronics', 'price': 69, 'purchase_date': days_ago(3), 'final_sale': False},
         ]
     )
 

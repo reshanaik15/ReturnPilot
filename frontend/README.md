@@ -43,18 +43,19 @@ Build output will be in the `dist/` directory.
 frontend/
 ├── package.json          # NPM dependencies and scripts
 ├── vite.config.js        # Vite configuration
-├── index.html            # HTML entry point
+├── index.html            # HTML entry point (Tailwind CDN + design tokens, ported from Stitch mockups)
 ├── .env.example          # Environment variable template
 ├── src/
 │   ├── main.jsx          # React entry point
-│   ├── App.jsx           # Main application component
+│   ├── App.jsx           # React Router setup (routes to the 4 pages below)
 │   ├── api.js            # Backend API client
-│   └── components/       # React components
-│       ├── LoginScreen.jsx
-│       ├── ChatView.jsx
-│       ├── Dashboard.jsx
-│       ├── StatusPill.jsx
-│       └── TraceStep.jsx
+│   ├── context/
+│   │   └── CustomerContext.jsx  # Selected demo customer (no real auth backend)
+│   └── pages/
+│       ├── LoginPage.jsx        # Customer picker
+│       ├── ChatPage.jsx         # AI chat, reasoning-trace-aware, photo attach
+│       ├── MyReturnsPage.jsx    # Customer's own return list
+│       └── TrackerPage.jsx      # Single-return status tracker
 ```
 
 ## Deployment

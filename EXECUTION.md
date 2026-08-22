@@ -479,7 +479,7 @@ from pydantic_settings import BaseSettings
 # Step 2: Define settings schema
 class Settings(BaseSettings):
     database_url: str  # ← Required field (no default)
-    anthropic_api_key: str
+    google_api_key: str
     # ...
     
     class Config:
@@ -608,15 +608,17 @@ Backend (FastAPI)
   ├─ main.py (entry point)
   ├─ config.py (environment variables)
   ├─ database.py (connection management)
-  ├─ models/ (database schema)
+  ├─ models/ (database schema + Pydantic schemas)
+  ├─ routers/ (agent, orders, policy, returns, dashboard endpoints)
+  ├─ services/ (tools.py, agents/orchestrator.py, notifications, storage, photo_analyzer)
   └─ migrations/ (schema version control)
   
 Database (PostgreSQL)
   ├─ customers table
   ├─ orders table
   ├─ return_policy table
-  ├─ returns table (not yet used)
-  └─ return_evidence table (not yet used)
+  ├─ returns table
+  └─ return_evidence table
 
 Benefits:
 - API keys secure on server
@@ -644,7 +646,7 @@ Tool execution happens in browser (execTool function)
 In-memory database updated (dbRef.current)
 ```
 
-**After (Current Design - Not Yet Implemented):**
+**After (Current Design - Fully Implemented):**
 ```
 User clicks "Send" in chat
   ↓
@@ -654,15 +656,16 @@ React calls fetch("http://localhost:8000/api/agent/message", {
   ↓
 Backend receives request at agent.py router
   ↓
-agent_loop.py calls Claude API with server-side API key
+orchestrator.py calls Gemini (Google AI Studio) via OpenAI-compatible endpoint
   ↓
-Claude returns tool_use block
+Gemini returns tool_calls (OpenAI-style: message.tool_calls[].function,
+with .arguments as a JSON string — not Anthropic's tool_use content block)
   ↓
 Backend executes tool (tools.py) against PostgreSQL database
   ↓
-Backend sends tool result back to Claude
+Backend sends tool result back to Gemini as a role:"tool" message
   ↓
-Claude returns final text response
+Gemini returns final text response (empty tool_calls)
   ↓
 Backend returns response to frontend
   ↓
@@ -776,16 +779,15 @@ Before moving forward, ensure you can answer these questions:
 - ✅ Database migrations and seed scripts
 - ✅ Health check endpoint
 - ✅ FastAPI app skeleton with CORS
+- ✅ Router files (agent.py, orders.py, returns.py, etc.)
+- ✅ Tool implementations (search_orders, check_policy, initiate_return)
+- ✅ Agent orchestration loop (Gemini API integration)
+- ✅ Pydantic schemas for request/response validation
+- ✅ Notification service integration
+- ✅ Photo upload to Supabase Storage
+- ✅ Frontend API client (api.ts)
+- ✅ Frontend migration to use backend endpoints
 
-### Not Yet Implemented
-- ❌ Router files (agent.py, orders.py, returns.py, etc.)
-- ❌ Tool implementations (search_orders, check_policy, initiate_return)
-- ❌ Agent orchestration loop (Claude API integration)
-- ❌ Pydantic schemas for request/response validation
-- ❌ Notification service integration
-- ❌ Photo upload to Supabase Storage
-- ❌ Frontend API client (api.ts)
-- ❌ Frontend migration to use backend endpoints
+**Current execution flow is fully implemented and operational. The end-to-end agent workflow (Tasks 4-18) is fully verified.**
 
-**Current execution flow ends at health check. The full agent workflow (Tasks 4-18) is still pending implementation.**
 

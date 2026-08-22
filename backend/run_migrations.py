@@ -13,6 +13,12 @@ Usage:
 """
 
 import sys
+
+# Windows consoles default to cp1252, which can't encode the checkmark/emoji
+# characters this script prints — force UTF-8 so it doesn't crash mid-run.
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
+
 import argparse
 from alembic.config import Config
 from alembic import command

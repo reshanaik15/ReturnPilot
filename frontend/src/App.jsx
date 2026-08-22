@@ -1,22 +1,51 @@
 import React from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { CustomerProvider, useCustomer } from './context/CustomerContext'
+import LoginPage from './pages/LoginPage'
+import ChatPage from './pages/ChatPage'
+import MyReturnsPage from './pages/MyReturnsPage'
+import TrackerPage from './pages/TrackerPage'
 
-/**
- * ReturnPilot Main Application
- * 
- * TODO: Migrate existing ReturnPilot.jsx component here
- * This placeholder will be replaced with the actual UI components
- * from the prototype, with API integration updated to use the backend.
- */
+function RequireCustomer({ children }) {
+  const { customer } = useCustomer()
+  if (!customer) return <Navigate to="/login" replace />
+  return children
+}
 
 function App() {
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>ReturnPilot</h1>
-      <p>AI-Powered Return Management System</p>
-      <p style={{ marginTop: '2rem', color: '#666' }}>
-        Frontend structure created. Ready to migrate existing UI components.
-      </p>
-    </div>
+    <CustomerProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/chat"
+            element={
+              <RequireCustomer>
+                <ChatPage />
+              </RequireCustomer>
+            }
+          />
+          <Route
+            path="/returns"
+            element={
+              <RequireCustomer>
+                <MyReturnsPage />
+              </RequireCustomer>
+            }
+          />
+          <Route
+            path="/returns/:returnId"
+            element={
+              <RequireCustomer>
+                <TrackerPage />
+              </RequireCustomer>
+            }
+          />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </CustomerProvider>
   )
 }
 

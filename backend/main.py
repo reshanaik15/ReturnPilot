@@ -3,6 +3,14 @@ ReturnPilot Backend - FastAPI Application
 Main application entry point with CORS configuration and health check.
 """
 
+import sys
+
+# Windows consoles default to cp1252, which can't encode characters like ₹
+# in notification messages or emoji in logs — force UTF-8 to avoid encoding
+# errors/traceback spam from the logging module during normal operation.
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -35,11 +43,13 @@ app = FastAPI(
 )
 
 # CORS configuration - reads from config.py (which loads from .env)
+# "null" is needed for file:// origins (demo.html opened directly)
 CORS_ORIGINS = [origin.strip() for origin in settings.cors_origins.split(",")]
+CORS_ORIGINS.append("null")  # file:// URLs send origin: null
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=CORS_ORIGINS,  # Must be explicit origins for allow_credentials=True
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -100,13 +110,29 @@ async def health_check():
         "database": db_health
     }
 
-# TODO: Import and include routers when implemented
-# from routers import agent, orders, returns, dashboard, policy
-# app.include_router(agent.router, prefix="/api")
-# app.include_router(orders.router, prefix="/api")
-# app.include_router(returns.router, prefix="/api")
-# app.include_router(dashboard.router, prefix="/api")
-# app.include_router(policy.router, prefix="/api")
+# Register all routers
+from routers import agent, orders, returns, dashboard, policy
+
+app.include_router(agent.router, prefix="/api")
+app.include_router(orders.router, prefix="/api")
+app.include_router(returns.router, prefix="/api")
+app.include_router(dashboard.router, prefix="/api")
+app.include_router(policy.router, prefix="/api")
+
+
+# Serve demo.html at /demo — same origin as API, no CORS issues
+import os
+from fastapi.responses import FileResponse
+
+DEMO_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "demo.html")
+
+@app.get("/demo")
+async def serve_demo():
+    """Serve the interactive demo chat page."""
+    if os.path.exists(DEMO_PATH):
+        return FileResponse(DEMO_PATH, media_type="text/html")
+    return {"error": "demo.html not found — place it at project root"}
+
 
 if __name__ == "__main__":
     import uvicorn

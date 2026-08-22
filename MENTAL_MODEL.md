@@ -21,7 +21,7 @@ Imagine you bought shoes online, they don't fit, and you want to return them. No
 4. You ship the item back
 5. Wait for refund
 
-**ReturnPilot automates this** using an AI agent (Claude) that:
+**ReturnPilot automates this** using an AI agent (Gemini) that:
 - Understands natural language ("I want to return my blue sneakers")
 - Looks up your orders in the database
 - Checks if you're eligible based on return policy
@@ -40,7 +40,7 @@ Imagine you bought shoes online, they don't fit, and you want to return them. No
            ↓
 ┌─────────────────────┐
 │  FastAPI Backend    │  ← Agent orchestration, tool execution
-│  (Business Logic)   │  ← Calls Claude API (server-side, secure)
+│  (Business Logic)   │  ← Calls Gemini API (server-side, secure)
 └──────────┬──────────┘
            │ SQL Queries
            ↓
@@ -129,15 +129,15 @@ Customers Folder
 
 ---
 
-## The Agent Loop: How Claude Makes Decisions
+## The Agent Loop: How Gemini Makes Decisions
 
 ### The Tool-Use Pattern
 
-Claude doesn't have direct access to your database. Instead, it uses **tools**—functions you expose to it.
+Gemini doesn't have direct access to your database. Instead, it uses **tools**—functions you expose to it.
 
 **Analogy: Lawyer and Paralegal**
 
-- **Claude**: Senior lawyer (smart, makes decisions, but no direct access to files)
+- **Gemini**: Senior lawyer (smart, makes decisions, but no direct access to files)
 - **Tools**: Paralegal staff (look up files, check records, file paperwork)
 - **Your Backend**: Office manager (coordinates between lawyer and paralegals)
 
@@ -146,86 +146,97 @@ Claude doesn't have direct access to your database. Instead, it uses **tools**�
 ```
 Customer: "I want to return my blue sneakers"
 
-Claude (thinks): "I need to find their order. I'll use search_orders tool."
-  ↓ [Claude returns tool_use block]
+Gemini (thinks): "I need to find their order. I'll use search_orders tool."
+  ↓ [Gemini's response includes a tool_calls entry]
 
 Backend: "Okay, I'll execute search_orders('blue sneakers')"
   ↓ [Queries database, finds ORD-1001]
 
-Backend (to Claude): "Tool result: Found order ORD-1001, Blue Running Sneakers, purchased 15 days ago"
+Backend (to Gemini): "Tool result: Found order ORD-1001, Blue Running Sneakers, purchased 15 days ago"
 
-Claude (thinks): "Now I need to check the return policy. I'll use check_policy tool."
-  ↓ [Claude returns tool_use block]
+Gemini (thinks): "Now I need to check the return policy. I'll use check_policy tool."
+  ↓ [Gemini's response includes a tool_calls entry]
 
 Backend: "Okay, I'll execute check_policy(ORD-1001)"
   ↓ [Queries database, joins orders + return_policy tables]
 
-Backend (to Claude): "Tool result: Eligible. Footwear has 30-day window, only 15 days passed."
+Backend (to Gemini): "Tool result: Eligible. Footwear has 30-day window, only 15 days passed."
 
-Claude (thinks): "Great! I'll initiate the return. I'll use initiate_return tool."
-  ↓ [Claude returns tool_use block]
+Gemini (thinks): "Great! I'll initiate the return. I'll use initiate_return tool."
+  ↓ [Gemini's response includes a tool_calls entry]
 
 Backend: "Okay, I'll execute initiate_return(ORD-1001, 'Too small')"
   ↓ [Inserts return record, generates RET-1001 ID, sends notification]
 
-Backend (to Claude): "Tool result: Return RET-1001 initiated. Shipping label sent to email."
+Backend (to Gemini): "Tool result: Return RET-1001 initiated. Shipping label sent to email."
 
-Claude (thinks): "I have all the info. Time to respond to the customer."
-  ↓ [Claude returns text response, no tool_use]
+Gemini (thinks): "I have all the info. Time to respond to the customer."
+  ↓ [Gemini returns text response, tool_calls is empty]
 
-Claude (to customer): "I've initiated your return for the Blue Running Sneakers (RET-1001). You'll receive a shipping label via email within 5 minutes. Once we receive the item, your refund will be processed in 3-5 business days."
+Gemini (to customer): "I've initiated your return for the Blue Running Sneakers (RET-1001). You'll receive a shipping label via email within 5 minutes. Once we receive the item, your refund will be processed in 3-5 business days."
 
-Backend: "No more tool_use blocks. Conversation complete."
+Backend: "No more tool_calls. Conversation complete."
   ↓ [Returns response to frontend]
 ```
 
 ### The Loop in Code
 
 ```python
-# Simplified agent loop (agent_loop.py)
+# Simplified agent loop (orchestrator.py) — Gemini via its OpenAI-compatible
+# endpoint, so this is OpenAI-style tool calling, not Anthropic's native
+# tool_use/tool_result content blocks.
 
-conversation_history = [
-    {"role": "user", "content": "I want to return my blue sneakers"}
+history = [
+    {"role": "user", "content": [{"type": "text", "text": "I want to return my blue sneakers"}]}
 ]
 
 for iteration in range(6):  # Max 6 tool-use cycles
-    # Step 1: Ask Claude what to do next
-    response = await call_claude_api(
-        messages=conversation_history,
-        tools=[search_orders, check_policy, initiate_return]
+    # Step 1: Ask Gemini what to do next
+    llm_response = await call_llm(
+        system=system_prompt,
+        messages=history,
+        tools=TOOLS,  # OpenAI-style function definitions
     )
-    
-    # Step 2: Check if Claude wants to use tools or respond
-    if response has tool_use blocks:
-        # Claude wants to use tools
-        for tool in response.tool_use_blocks:
-            # Execute the tool (query database, etc.)
-            result = await execute_tool(tool.name, tool.input)
-            
-            # Send result back to Claude
-            conversation_history.append({
-                "role": "user",
-                "content": [{"type": "tool_result", "content": result}]
+    assistant_message = llm_response["choices"][0]["message"]
+    history.append(assistant_message)
+
+    tool_calls = assistant_message.get("tool_calls") or []
+
+    # Step 2: Check if Gemini wants to use tools or respond
+    if tool_calls:
+        # Gemini wants to use tools
+        tool_results = []
+        for call in tool_calls:
+            name = call["function"]["name"]
+            # arguments arrives as a JSON *string* — must be parsed
+            args = json.loads(call["function"]["arguments"])
+            result = await execute_tool(name, args)
+
+            # Each tool result is its own message with role "tool",
+            # not nested inside a "user" message like Anthropic's format
+            tool_results.append({
+                "role": "tool",
+                "tool_call_id": call["id"],
+                "content": json.dumps(result),
             })
-        
-        # Continue loop (ask Claude again with tool results)
+        history.extend(tool_results)
+        # Continue loop (ask Gemini again with tool results)
     else:
-        # Claude returned text response (no tools)
-        # We're done!
-        return response.text
+        # Gemini returned text response (no tools) — we're done!
+        return assistant_message.get("content") or ""
 ```
 
 **Mental Model: Ping-Pong Game**
 
 ```
-You → Claude: "I want to return my blue sneakers"
-Claude → You: [tool_use: search_orders]
-You → Claude: [tool_result: Found ORD-1001]
-Claude → You: [tool_use: check_policy]
-You → Claude: [tool_result: Eligible]
-Claude → You: [tool_use: initiate_return]
-You → Claude: [tool_result: RET-1001 created]
-Claude → You: [text: "Return initiated! Shipping label sent."]
+You → Gemini: "I want to return my blue sneakers"
+Gemini → You: [tool_calls: search_orders]
+You → Gemini: [role: tool, content: Found ORD-1001]
+Gemini → You: [tool_calls: check_policy]
+You → Gemini: [role: tool, content: Eligible]
+Gemini → You: [tool_calls: initiate_return]
+You → Gemini: [role: tool, content: RET-1001 created]
+Gemini → You: [text: "Return initiated! Shipping label sent."]
 DONE ✅
 ```
 
@@ -558,11 +569,11 @@ alembic downgrade -1
 
 ```javascript
 // ReturnPilot.jsx (runs in browser)
-const ANTHROPIC_API_KEY = "sk-ant-your-secret-key";  // ← EXPOSED!
+const GOOGLE_API_KEY = "AIzaSyC...-your-secret-key";  // ← EXPOSED!
 
-fetch("https://api.anthropic.com/v1/messages", {
+fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
   headers: {
-    "x-api-key": ANTHROPIC_API_KEY  // ← Anyone can see this in browser DevTools!
+    "Authorization": "Bearer " + GOOGLE_API_KEY  // ← Anyone can see this in browser DevTools!
   }
 });
 ```
@@ -589,11 +600,11 @@ Backend (server):
   - Stores API key in environment variable (.env file)
   - .env file is NEVER committed to Git (.gitignore blocks it)
   - API key is NEVER sent to frontend
-  - Backend makes Claude API calls on frontend's behalf
+  - Backend makes Gemini API calls on frontend's behalf
 
-Claude API:
+Gemini API (Google AI Studio):
   - Only sees requests from YOUR backend IP address
-  - Frontend never talks directly to Claude
+  - Frontend never talks directly to Gemini
 ```
 
 **Code flow:**
@@ -615,8 +626,8 @@ fetch("http://localhost:8000/api/agent/message", {
 @app.post("/api/agent/message")
 async def agent_message(request: AgentMessageRequest):
     # API key is stored server-side (in environment variable)
-    response = await call_claude_api(
-        api_key=settings.anthropic_api_key,  # ← Loaded from .env file
+    response = await call_llm(
+        system="...",
         messages=[{"role": "user", "content": request.message}]
     )
     return response
@@ -645,7 +656,7 @@ async def agent_message(request: AgentMessageRequest):
              │ Server-to-server
              ↓
 ┌──────────────────────────────────────┐
-│  Claude API (Anthropic)              │
+│  Gemini API (Google AI Studio)       │
 │  - Only accepts requests from        │
 │    backend server IP                 │
 └──────────────────────────────────────┘
@@ -701,13 +712,13 @@ async def agent_message(request: AgentMessageRequest):
     │
     ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ AGENT LOOP (agent_loop.py)                                  │
+│ AGENT LOOP (orchestrator.py)                                │
 └───┬─────────────────────────────────────────────────────────┘
     │
     │ 4. agent_turn() starts orchestration loop
     │    - Iteration 1:
-    │      - Calls Claude API with message + tool definitions
-    │      - Claude returns: [tool_use: search_orders, query="blue sneakers"]
+    │      - Calls Gemini API with message + tool definitions
+    │      - Gemini returns: [tool_calls: search_orders, query="blue sneakers"]
     │      - Executes: await search_orders(customer_id, "blue sneakers")
     │
     ↓
@@ -717,10 +728,14 @@ async def agent_message(request: AgentMessageRequest):
     │
     │ 5. search_orders() function executes
     │    - Gets database session: async with get_db()
+    │    - Extracts whole-word keywords from the query ("blue", "sneakers"),
+    │      filtering out conversational filler first (extract_keywords())
     │    - Queries: SELECT * FROM orders 
     │               WHERE customer_id = :id
-    │               AND (item_name LIKE '%blue%' 
-    │                    AND item_name LIKE '%sneakers%')
+    │               AND (item_name ~* '\yblue\y' 
+    │                    OR item_name ~* '\ysneakers\y')
+    │      (word-boundary regex match, not raw substring LIKE — LIKE '%all%'
+    │      would wrongly match "Wallet"; ~* '\yall\y' won't)
     │
     ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -747,14 +762,14 @@ async def agent_message(request: AgentMessageRequest):
     │
     ↑
 ┌───┴─────────────────────────────────────────────────────────┐
-│ AGENT LOOP (agent_loop.py) (continued)                      │
+│ AGENT LOOP (orchestrator.py) (continued)                    │
 └───┬─────────────────────────────────────────────────────────┘
     │
     │ 8. agent_turn() receives tool result
     │    - Appends result to conversation history
     │    - Iteration 2:
-    │      - Sends result to Claude: [tool_result: found ORD-1001]
-    │      - Claude returns: [tool_use: check_policy, order_id="ORD-1001"]
+    │      - Sends result to Gemini: [role: tool, content: found ORD-1001]
+    │      - Gemini returns: [tool_calls: check_policy, order_id="ORD-1001"]
     │      - Executes: await check_policy("ORD-1001")
     │
     ↓
@@ -795,14 +810,14 @@ async def agent_message(request: AgentMessageRequest):
     │
     ↑
 ┌───┴─────────────────────────────────────────────────────────┐
-│ AGENT LOOP (agent_loop.py) (continued)                      │
+│ AGENT LOOP (orchestrator.py) (continued)                    │
 └───┬─────────────────────────────────────────────────────────┘
     │
     │ 12. agent_turn() receives tool result
     │     - Appends result to conversation
     │     - Iteration 3:
-    │       - Sends result to Claude: [tool_result: eligible=true]
-    │       - Claude returns: [tool_use: initiate_return, 
+    │       - Sends result to Gemini: [role: tool, content: eligible=true]
+    │       - Gemini returns: [tool_calls: initiate_return, 
     │                          order_id="ORD-1001", 
     │                          reason="Too small"]
     │       - Executes: await initiate_return("ORD-1001", "Too small")
@@ -845,14 +860,14 @@ async def agent_message(request: AgentMessageRequest):
     │
     ↑
 ┌───┴─────────────────────────────────────────────────────────┐
-│ AGENT LOOP (agent_loop.py) (continued)                      │
+│ AGENT LOOP (orchestrator.py) (continued)                    │
 └───┬─────────────────────────────────────────────────────────┘
     │
     │ 16. agent_turn() receives tool result
     │     - Appends result to conversation
     │     - Iteration 4:
-    │       - Sends result to Claude: [tool_result: RET-1001 created]
-    │       - Claude returns: [text: "I've initiated your return..."]
+    │       - Sends result to Gemini: [role: tool, content: RET-1001 created]
+    │       - Gemini returns: [text: "I've initiated your return..."]
     │       - NO TOOL_USE BLOCKS → Loop complete
     │     - Returns: {
     │         "response": "I've initiated your return...",
@@ -901,7 +916,7 @@ async def agent_message(request: AgentMessageRequest):
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Total time: ~2-4 seconds** (mostly Claude API calls)
+**Total time: ~2-4 seconds** (mostly Gemini API calls)
 
 ---
 

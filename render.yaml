@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: returnpilot-backend
+    env: python
+    buildCommand: pip install -r requirements.txt && python run_migrations.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GOOGLE_MODEL
+        value: gemini-3.5-flash-lite
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: NOTIFICATION_SERVICE_URL
+        sync: false

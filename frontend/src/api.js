@@ -135,6 +135,40 @@ export const api = {
   },
 
   /**
+   * List all returns belonging to one customer (for the My Returns page)
+   * @param {string} customerId - Customer ID
+   * @returns {Promise<{returns: Array, total: number}>}
+   */
+  getCustomerReturns: async (customerId) => {
+    return apiFetch(`/api/returns/customer/${customerId}`);
+  },
+
+  /**
+   * Upload return-evidence photo and run AI consistency verification.
+   * Not JSON — multipart/form-data, so this bypasses the apiFetch() wrapper.
+   * @param {string} returnId - Return ID the photo is evidence for
+   * @param {string} claimedIssue - Customer's stated issue
+   * @param {File} photoFile - The image file
+   * @returns {Promise<{success: bool, routing: string, ai_verdict: object, photo_url: string}>}
+   */
+  verifyPhoto: async (returnId, claimedIssue, photoFile) => {
+    const form = new FormData();
+    form.append('return_id', returnId);
+    form.append('claimed_issue', claimedIssue);
+    form.append('photo', photoFile);
+
+    const response = await fetch(`${API_BASE_URL}/api/returns/verify-photo`, {
+      method: 'POST',
+      body: form,
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `API Error: ${response.status}`);
+    }
+    return await response.json();
+  },
+
+  /**
    * Health check
    * @returns {Promise<{status: string, timestamp: string}>}
    */

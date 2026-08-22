@@ -1,6 +1,6 @@
 # ReturnPilot
 
-AI-powered return management system using Claude agent orchestration.
+AI-powered return management system using Gemini agent orchestration.
 
 ## Project Structure
 
@@ -90,7 +90,7 @@ Frontend will be available at `http://localhost:5173`
 - **Backend**: FastAPI (Python) + SQLAlchemy 2.0
 - **Database**: Supabase PostgreSQL
 - **Storage**: Supabase Storage for photo evidence
-- **AI**: Claude API for agent orchestration
+- **AI**: LLM agent orchestration via Google AI Studio (default model: `gemini-3.5-flash-lite`, free tier)
 
 ### Deployment
 
@@ -102,7 +102,7 @@ Frontend will be available at `http://localhost:5173`
 
 - ✅ Secure API key management (server-side only)
 - ✅ Multi-user support with data isolation
-- ✅ Claude agent orchestration with tool-use loop
+- ✅ Gemini agent orchestration with tool-use loop
 - ✅ Photo evidence upload and AI verification
 - ✅ Real-time business dashboard
 - ✅ Multi-step return workflow with state machine
@@ -113,13 +113,14 @@ Frontend will be available at `http://localhost:5173`
 
 - [Backend README](./backend/README.md) - Backend setup and API documentation
 - [Frontend README](./frontend/README.md) - Frontend setup and deployment
+- [viaSocket Investigation](./VIASOCKET_ARCHITECTURE.md) - A parallel no-code build was explored as an alternative/bonus demo; this documents why it isn't the submission (see Decision 19 in `DECISIONS.md`)
 
 ## Requirements
 
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL (via Supabase)
-- Claude API key (Anthropic)
+- Google AI Studio API key
 
 ## License
 

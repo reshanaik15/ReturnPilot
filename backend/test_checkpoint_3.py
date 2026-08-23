@@ -228,19 +228,20 @@ class CheckpointVerifier:
                 result = await session.execute(select(Order))
                 orders = result.scalars().all()
                 
-                if len(orders) == 24:
-                    self.print_success(f"Found 24 orders (expected 24)")
+                if len(orders) == 27:
+                    self.print_success(f"Found 27 orders (expected 27)")
                 else:
-                    self.print_failure(f"Found {len(orders)} orders (expected 24)")
+                    self.print_failure(f"Found {len(orders)} orders (expected 27)")
                 
-                # Verify order distribution (8 per customer)
+                # Verify order distribution (8 for Amara/Jordan, 11 for Priya)
                 if len(customers) == 3:
                     for customer in customers:
                         customer_orders = [o for o in orders if str(o.customer_id) == str(customer.id)]
-                        if len(customer_orders) == 8:
-                            self.print_info(f"  ✓ {customer.name}: 8 orders")
+                        expected_count = 11 if customer.name == "Priya Nair" else 8
+                        if len(customer_orders) == expected_count:
+                            self.print_info(f"  ✓ {customer.name}: {expected_count} orders")
                         else:
-                            self.print_warning(f"  {customer.name}: {len(customer_orders)} orders (expected 8)")
+                            self.print_warning(f"  {customer.name}: {len(customer_orders)} orders (expected {expected_count})")
                 
                 # Verify 6 return policies
                 result = await session.execute(select(ReturnPolicy))

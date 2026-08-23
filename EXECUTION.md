@@ -1,6 +1,7 @@
 # Code Execution Flow
 
 > **⚠️ Status update (2026-08-23):** This document describes the Phase 1 FastAPI backend flow. Note that a parallel viaSocket-native build has also been completed and powers the live Vercel demo. The execution flow for the viaSocket backend operates via DBdash webhooks and a native AI Agent, bypassing the FastAPI code described below.
+
 ## Overview
 
 This document explains **exactly how the ReturnPilot backend code executes**, from the entry point through the entire request lifecycle. It shows which functions call which functions, what the execution order is, and traces a complete request through the system.

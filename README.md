@@ -115,7 +115,7 @@ Frontend will be available at `http://localhost:5173`
 
 - [Backend README](./backend/README.md) - Backend setup and API documentation
 - [Frontend README](./frontend/README.md) - Frontend setup and deployment
-- [viaSocket Investigation](./VIASOCKET_ARCHITECTURE.md) - A parallel no-code build was explored as an alternative/bonus demo; this documents why it isn't the submission (see Decision 19 in `DECISIONS.md`)
+- [viaSocket Architecture](./VIASOCKET_ARCHITECTURE.md) - Documentation for the viaSocket backend integration, which powers the live Vercel demo.
 
 ## Requirements
 

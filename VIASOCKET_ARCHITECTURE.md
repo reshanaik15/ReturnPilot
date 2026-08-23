@@ -16,31 +16,31 @@ viaSocket's native **AI Agents** feature (distinct from viaSocket "Flows," which
 ```mermaid
 flowchart TD
     subgraph Frontend
-        User([Customer / Demo UI])
+        User(["Customer / Demo UI"])
     end
 
-    subgraph viaSocket Platform
-        Webhook[Webhook Receivers\n(flow.sokt.io)]
-        Agent{AI Agent\n(OpenAI GPT-4o)}
-        
-        subgraph DBdash [viaSocket Tables]
-            DB_Orders[(orders)]
-            DB_Policies[(Policies)]
-            DB_Returns[(returns)]
+    subgraph viaSocketPlatform["viaSocket Platform"]
+        Webhook["Webhook Receivers<br/>(flow.sokt.io)"]
+        Agent{"AI Agent<br/>(OpenAI GPT-4o)"}
+
+        subgraph DBdash["viaSocket Tables"]
+            DB_Orders[("orders")]
+            DB_Policies[("Policies")]
+            DB_Returns[("returns")]
         end
-        
-        Email[Gmail Node\n(Notifications)]
+
+        Email["Gmail Node<br/>(Notifications)"]
     end
 
-    User -->|POST /func/...| Webhook
+    User -->|"POST /func/..."| Webhook
     Webhook --> Agent
-    
-    Agent -->|Get Table Rows| DB_Orders
-    Agent -->|Get Table Rows| DB_Policies
-    Agent -->|Add Record To Table| DB_Returns
-    
-    Agent -->|Trigger Email| Email
-    Agent -.->|JSON Response + Trace| User
+
+    Agent -->|"Get Table Rows"| DB_Orders
+    Agent -->|"Get Table Rows"| DB_Policies
+    Agent -->|"Add Record To Table"| DB_Returns
+
+    Agent -->|"Trigger Email"| Email
+    Agent -.->|"JSON Response + Trace"| User
 ```
 
 ## Components (as configured)

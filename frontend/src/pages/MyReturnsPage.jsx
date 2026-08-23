@@ -91,7 +91,7 @@ export default function MyReturnsPage() {
 
       {/* Mobile TopNavBar */}
       <header className="md:hidden sticky top-0 z-50 flex justify-between items-center w-full px-margin-mobile h-16 shadow-sm bg-surface transition-all">
-        <a className="text-headline-lg-mobile font-headline-lg-mobile font-extrabold text-primary">ReturnEase AI</a>
+        <a className="text-headline-lg-mobile font-headline-lg-mobile font-extrabold text-primary">ReturnPilot</a>
         <div className="flex items-center gap-4">
           <button className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all">
             <span className="material-symbols-outlined">notifications</span>

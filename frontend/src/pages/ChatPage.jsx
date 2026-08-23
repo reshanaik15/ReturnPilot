@@ -160,7 +160,7 @@ export default function ChatPage() {
       {/* TopNavBar */}
       <header className="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop h-16 max-w-container-max mx-auto shadow-sm bg-surface text-primary">
         <div className="text-headline-md font-headline-md font-extrabold text-primary tracking-tight">
-          ReturnEase AI
+          ReturnPilot
         </div>
         <nav className="hidden md:flex items-center gap-8 h-full">
           <a className="h-full flex items-center text-primary font-bold border-b-2 border-primary pb-1 opacity-80 scale-95 transition-transform text-label-md font-label-md cursor-default">

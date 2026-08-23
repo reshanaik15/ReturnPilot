@@ -4,6 +4,8 @@ AI-powered return management system using Gemini agent orchestration.
 
 **Live Demo (viaSocket backend supported)**: [https://returnpilot-app.vercel.app](https://returnpilot-app.vercel.app)
 
+**Live Demo (FastAPI/Gemini backend)**: [https://returnpilot.vercel.app](https://returnpilot.vercel.app)
+
 ## Project Structure
 
 ```

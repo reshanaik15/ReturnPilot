@@ -33,7 +33,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <h1 className="text-headline-lg font-headline-lg text-primary mb-2">ReturnEase AI</h1>
+          <h1 className="text-headline-lg font-headline-lg text-primary mb-2">ReturnPilot</h1>
           <p className="text-body-md font-body-md text-on-surface-variant mb-8">
             Your AI-powered assistant for fast and easy product returns.
           </p>

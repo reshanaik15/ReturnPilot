@@ -586,9 +586,9 @@ op.create_index('idx_returns_status', 'returns', ['status'])
 
 ---
 
-## Decision 19: FastAPI/Gemini Backend as the Submission, Not the Parallel viaSocket Build
+## Decision 19: FastAPI/Gemini Backend & viaSocket Backend Dual Support
 
-**Decision:** This repository's FastAPI + Gemini backend (`backend/`) is the system submitted for judging. A parallel viaSocket-native build made by a teammate on a separate machine, using the same problem statement, was evaluated as a possible alternative or bonus demo and rejected for that role after direct testing.
+**Decision:** This repository contains the FastAPI + Gemini backend (`backend/`), which is a complete implementation. However, a parallel viaSocket-native build has also been completed and powers the live Vercel demo, serving as a supported no-code alternative.
 
 **Why This Approach?**
 
@@ -601,8 +601,8 @@ op.create_index('idx_returns_status', 'returns', ['status'])
 - **Present both builds as co-equal**: rejected for the write path specifically; a read-only walkthrough of viaSocket's tool-calling/reasoning-trace behavior remains a defensible talking point, documented as an alternative explored, not as a working product.
 
 **Trade-offs:**
-- ✅ **Pro**: The submitted system is the one that's actually been verified end-to-end, and is inspectable via source code as the judging methodology expects.
-- ❌ **Con**: The viaSocket track's sponsorship angle isn't showcased as the headline, only as a documented exploration.
+- ✅ **Pro**: Showcases two different approaches to the same problem statement: a fully coded, locally hosted FastAPI backend and a no-code viaSocket implementation.
+- ❌ **Con**: Requires maintaining documentation for two different architectures.
 
 **References:** `VIASOCKET_ARCHITECTURE.md`
 

@@ -1,6 +1,6 @@
 # Code Execution Flow
 
-> **⚠️ Status update (2026-08-21):** describes the Phase 1 FastAPI backend. The team is spike-testing a viaSocket pivot (see `DECISIONS.md` Decision 17, `.kiro/specs/backend-architecture-migration/tasks.md` Phase 2). This document stays accurate only if the spike fails and Phase 1 resumes; it is not being kept in sync with the viaSocket flows.
+> **⚠️ Status update (2026-08-23):** This document describes the Phase 1 FastAPI backend flow. Note that a parallel viaSocket-native build has also been completed and powers the live Vercel demo. The execution flow for the viaSocket backend operates via DBdash webhooks and a native AI Agent, bypassing the FastAPI code described below.
 
 ## Overview
 

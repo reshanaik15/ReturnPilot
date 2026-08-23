@@ -1,5 +1,7 @@
 # Code Execution Flow
 
+> **⚠️ Status update (2026-08-21):** describes the Phase 1 FastAPI backend. The team is spike-testing a viaSocket pivot (see `DECISIONS.md` Decision 17, `.kiro/specs/backend-architecture-migration/tasks.md` Phase 2). This document stays accurate only if the spike fails and Phase 1 resumes; it is not being kept in sync with the viaSocket flows.
+
 ## Overview
 
 This document explains **exactly how the ReturnPilot backend code executes**, from the entry point through the entire request lifecycle. It shows which functions call which functions, what the execution order is, and traces a complete request through the system.

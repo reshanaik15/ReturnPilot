@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReturnEase AI - Assistant Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#0f62fe",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f4f6",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "outline": "#737687",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "primary": "#004ccd",
+                        "primary-fixed": "#dbe1ff",
+                        "inverse-primary": "#b4c5ff",
+                        "tertiary": "#7b4d00",
+                        "on-tertiary-container": "#fff2e7",
+                        "on-background": "#191c1e",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#9c6300",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9fb",
+                        "inverse-surface": "#2e3132",
+                        "surface": "#f8f9fb",
+                        "on-secondary-fixed": "#07006c",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#6063ee",
+                        "surface-container-highest": "#e1e2e4",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c3c6d8",
+                        "surface-container": "#edeef0",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-surface-variant": "#424656",
+                        "secondary": "#4648d4",
+                        "surface-tint": "#0052dd",
+                        "tertiary-fixed": "#ffddb8",
+                        "secondary-fixed": "#e1e0ff",
+                        "on-primary-fixed": "#00174c",
+                        "on-primary-fixed-variant": "#003da9",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "inverse-on-surface": "#f0f1f3",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e1e2e4",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#fffbff",
+                        "surface-dim": "#d9dadc",
+                        "surface-bright": "#f8f9fb",
+                        "on-primary-container": "#f3f3ff",
+                        "surface-container-high": "#e7e8ea",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "margin-desktop": "40px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "14px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #c3c6d8;
+            border-radius: 20px;
+        }
+        .chat-area-bg {
+            background: linear-gradient(180deg, #f8f9fb 0%, #ffffff 100%);
+        }
+        .typing-indicator span {
+            animation: blink 1.4s infinite both;
+            height: 6px;
+            width: 6px;
+            background: #004ccd;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 1px;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            20% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.2; transform: scale(0.8); }
+        }
+        /* Reasoning trace: faint, italic, visually secondary to the actual reply */
+        .reasoning-trace {
+            font-style: italic;
+            font-size: 12px;
+            line-height: 18px;
+            color: #424656;
+            opacity: 0.55;
+            padding: 2px 4px 0 4px;
+        }
+        .reasoning-trace .step {
+            display: block;
+        }
+        .reasoning-trace .step::before {
+            content: "· ";
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen flex flex-col overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop h-16 max-w-container-max mx-auto shadow-sm dark:shadow-none bg-surface dark:bg-inverse-surface text-primary dark:text-inverse-primary">
+<div class="text-headline-md font-headline-md font-extrabold text-primary dark:text-inverse-primary tracking-tight">ReturnEase AI</div>
+<nav class="hidden md:flex items-center gap-8 h-full">
+<a class="h-full flex items-center text-primary dark:text-inverse-primary font-bold border-b-2 border-primary dark:border-inverse-primary pb-1 opacity-80 scale-95 transition-transform text-label-md font-label-md" href="#">AI Chat</a>
+<a class="h-full flex items-center text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors hover:bg-surface-container-low dark:hover:bg-surface-container-highest text-label-md font-label-md" href="#">My Returns</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-all text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden max-w-container-max w-full mx-auto relative">
+<!-- SideNavBar (Shared Component) - Hidden on Mobile -->
+<aside class="hidden lg:flex flex-col w-60 h-full py-6 bg-surface-container-lowest dark:bg-surface-dim border-r border-outline-variant dark:border-outline z-10 text-primary dark:text-inverse-primary">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Welcome back</p>
+<p class="text-label-md font-label-md font-bold text-on-surface">Reliable Expert AI</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 px-4 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container font-semibold rounded-lg mx-2 scale-98 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="text-label-md font-label-md">AI Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_return">assignment_return</span>
+<span class="text-label-md font-label-md">My Returns</span>
+</a>
+</nav>
+<div class="px-6 mt-auto">
+<button class="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-label-md hover:bg-surface-tint transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    New Return
+                </button>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col relative chat-area-bg h-full">
+<!-- Chat Header (Mobile only, standard nav handles desktop) -->
+<div class="md:hidden flex items-center justify-between p-4 border-b border-outline-variant bg-surface">
+<span class="text-headline-lg-mobile font-headline-lg-mobile font-bold">AI Chat</span>
+<button class="p-2 text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<!-- Scrollable Conversation Area -->
+<div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar scroll-smooth flex flex-col gap-6" id="chat-container">
+<!-- Initial AI Message -->
+<div class="flex gap-4 max-w-[85%] md:max-w-[70%]">
+<div class="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white mt-1 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div class="flex flex-col gap-2">
+<div class="bg-[#F0F7FF] text-on-surface p-4 rounded-xl rounded-bl-none shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-primary-fixed border-opacity-50 text-body-md font-body-md">
+                            Hi! I'm your AI Return Assistant. I can help you initiate a return, check the status of an existing return, or answer questions about your return.
+                        </div>
+<!-- Quick Action Chips -->
+<div class="flex flex-wrap gap-2 mt-1">
+<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant text-label-sm font-label-sm hover:bg-surface-container-low hover:text-primary hover:border-primary transition-colors flex items-center gap-1 bg-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]">replay</span>
+                                Start a Return
+                            </button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant text-label-sm font-label-sm hover:bg-surface-container-low hover:text-primary hover:border-primary transition-colors flex items-center gap-1 bg-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+                                Track My Return
+                            </button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant text-label-sm font-label-sm hover:bg-surface-container-low hover:text-primary hover:border-primary transition-colors flex items-center gap-1 bg-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]">help</span>
+                                Return Help
+                            </button>
+</div>
+</div>
+</div>
+<!-- Customer Message -->
+<div class="flex justify-end w-full">
+<div class="flex gap-4 max-w-[85%] md:max-w-[70%] flex-row-reverse">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex-shrink-0 flex items-center justify-center text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[18px]">person</span>
+</div>
+<div class="bg-primary text-white p-4 rounded-xl rounded-br-none shadow-[0px_4px_20px_rgba(0,0,0,0.05)] text-body-md font-body-md">
+                            I received a damaged pair of headphones.
+                        </div>
+</div>
+</div>
+<!-- AI Message -->
+<div class="flex gap-4 max-w-[85%] md:max-w-[70%]">
+<div class="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white mt-1 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-[#F0F7FF] text-on-surface p-4 rounded-xl rounded-bl-none shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-primary-fixed border-opacity-50 text-body-md font-body-md">
+                        I'm sorry to hear that. I can help you initiate a return. Could you confirm which product you would like to return?
+                    </div>
+<!-- Reasoning trace: rendered from parseAgentResponse()'s reasoningSteps array -->
+<div class="reasoning-trace">
+<span class="step">Looked up recent orders for this customer to find candidates matching "headphones"</span>
+<span class="step">Found one match: Wireless Noise Cancelling Headphones — asked for confirmation since the reason wasn't yet specified</span>
+</div>
+</div>
+</div>
+<!-- Customer Message -->
+<div class="flex justify-end w-full">
+<div class="flex gap-4 max-w-[85%] md:max-w-[70%] flex-row-reverse">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex-shrink-0 flex items-center justify-center text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[18px]">person</span>
+</div>
+<div class="bg-primary text-white p-4 rounded-xl rounded-br-none shadow-[0px_4px_20px_rgba(0,0,0,0.05)] text-body-md font-body-md">
+                            Wireless Noise Cancelling Headphones
+                        </div>
+</div>
+</div>
+<!-- AI Message with Inline Card -->
+<div class="flex gap-4 max-w-[95%] md:max-w-[85%]">
+<div class="w-8 h-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white mt-1 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">smart_toy</span>
+</div>
+<div class="flex flex-col gap-3 w-full">
+<div class="flex flex-col gap-1 self-start">
+<div class="bg-[#F0F7FF] text-on-surface p-4 rounded-xl rounded-bl-none shadow-[0px_4px_20px_rgba(0,0,0,0.02)] border border-primary-fixed border-opacity-50 text-body-md font-body-md">
+                            Got it. I've recorded the reason as a damaged product. Your return request is ready.
+                        </div>
+<!-- Reasoning trace -->
+<div class="reasoning-trace">
+<span class="step">Confirmed order: Headphones, purchased Aug 21, 2026, category Electronics</span>
+<span class="step">Checked return policy for Electronics — 10-day window, purchase was 1 day ago, eligible</span>
+<span class="step">Checked for an existing return on this order — none found</span>
+<span class="step">Created return record with status "initiated"</span>
+</div>
+</div>
+<!-- Return Created Card (Inline) -->
+<div class="bg-surface-container-lowest border border-outline-variant hover:border-[#D1D5DB] rounded-[16px] p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.05)] w-full max-w-md transition-colors">
+<div class="flex items-center gap-2 text-primary font-label-md mb-4">
+<span class="material-symbols-outlined text-[20px] text-primary">check_circle</span>
+<span class="text-label-md font-label-md">Return Request Created</span>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between items-start border-b border-surface-container-high pb-3">
+<span class="text-on-surface-variant text-body-sm font-body-sm">Product</span>
+<span class="text-on-surface text-body-sm font-body-sm font-medium text-right max-w-[60%]">Wireless Noise Cancelling Headphones</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-container-high pb-3">
+<span class="text-on-surface-variant text-body-sm font-body-sm">Reason</span>
+<span class="text-on-surface text-body-sm font-body-sm">Damaged product</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-container-high pb-3">
+<span class="text-on-surface-variant text-body-sm font-body-sm">ID</span>
+<span class="text-on-surface text-label-sm font-label-sm bg-surface-container px-2 py-1 rounded">RET-1024</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-container-high pb-3">
+<span class="text-on-surface-variant text-body-sm font-body-sm">Date</span>
+<span class="text-on-surface text-body-sm font-body-sm">Aug 21, 2026</span>
+</div>
+<div class="flex justify-between items-center pt-1">
+<span class="text-on-surface-variant text-body-sm font-body-sm">Status</span>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-[rgba(15,98,254,0.1)] text-primary">
+                                        Requested
+                                    </span>
+</div>
+</div>
+<button class="w-full py-2.5 bg-primary-fixed text-primary font-label-md rounded-lg hover:bg-primary hover:text-white transition-colors">
+                                Track Return
+                            </button>
+</div>
+</div>
+</div>
+<!-- Spacer for bottom input -->
+<div class="h-4"></div>
+</div>
+<!-- Sticky Chat Input Area -->
+<div class="p-4 md:p-6 bg-surface-container-lowest border-t border-outline-variant bg-opacity-95 backdrop-blur-sm z-20 shadow-[0px_-4px_20px_rgba(0,0,0,0.03)]">
+<div class="max-w-4xl mx-auto relative flex items-center">
+<button class="absolute left-3 text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<input autocomplete="off" class="w-full pl-12 pr-14 py-4 bg-surface rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary focus:ring-opacity-20 text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant outline-none transition-all shadow-sm" id="chat-input" placeholder="Type your message..." type="text"/>
+<button class="absolute right-2 p-2.5 bg-primary text-white rounded-lg hover:bg-surface-tint transition-colors shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="send">send</span>
+</button>
+</div>
+<div class="text-center mt-3 text-label-sm font-label-sm text-outline">
+                    AI Return Assistant may produce inaccurate information.
+                </div>
+</div>
+</main>
+</div>
+<!-- Scripts for simple interactions -->
+<script>
+        // Auto-scroll to bottom on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Simple focus effect
+            const chatInput = document.getElementById('chat-input');
+            chatInput.focus();
+
+            // Allow enter to "send" (visual only)
+            chatInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter' && this.value.trim() !== '') {
+                    this.value = '';
+                    // In a real app, this would append a message
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReturnEase — Ops Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#004ccd',
+          'primary-fixed': '#dbe1ff',
+          'on-primary-fixed': '#00174c',
+          background: '#f8f9fb',
+          'surface-container-lowest': '#ffffff',
+          'surface-container-low': '#f3f4f6',
+          'surface-container': '#edeef0',
+          'on-surface': '#191c1e',
+          'on-surface-variant': '#424656',
+          'outline-variant': '#c3c6d8',
+          error: '#ba1a1a',
+          'error-container': '#ffdad6',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+</style>
+</head>
+<body class="bg-background text-on-surface min-h-screen p-6 md:p-10">
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-extrabold text-primary">ReturnEase — Ops Dashboard</h1>
+    <p class="text-on-surface-variant mt-1">All customer returns. Advance status to trigger the next notification.</p>
+  </div>
+
+  <div id="status-line" class="text-sm text-on-surface-variant mb-4"></div>
+  <div id="list" class="flex flex-col gap-4"></div>
+</div>
+
+<script>
+  const GET_MY_RETURNS_URL = 'https://flow.sokt.io/func/scrinfNHTNQP';
+  const ADVANCE_RETURN_URL = 'https://flow.sokt.io/func/scriWZw9Q5vC';
+
+  // No "Get All Returns" (unfiltered) flow exists yet — shortcut for a 3-customer demo:
+  // fetch each known customer's returns and merge client-side. Add names here if more
+  // customers get seeded; build a real unfiltered flow if this ever needs to scale.
+  const CUSTOMER_NAMES = ['Amara Chen', 'Jordan Reyes', 'Priya'];
+
+  const STATUS_DISPLAY = {
+    initiated: { label: 'Initiated', class: 'bg-[#dbe1ff] text-[#00174c]' },
+    shipped: { label: 'In Transit', class: 'bg-primary-fixed text-on-primary-fixed' },
+    in_transit: { label: 'In Transit', class: 'bg-primary-fixed text-on-primary-fixed' },
+    refunded: { label: 'Refunded', class: 'bg-[#dcfce7] text-[#166534]' },
+    declined: { label: 'Declined', class: 'bg-surface-container text-on-surface-variant' },
+  };
+
+  const listEl = document.getElementById('list');
+  const statusLine = document.getElementById('status-line');
+
+  async function fetchReturnsFor(customerName) {
+    const res = await fetch(GET_MY_RETURNS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customer_name: customerName }),
+    });
+    if (!res.ok) throw new Error(`Fetch failed for ${customerName}: ${res.status}`);
+    const raw = await res.json();
+    return Array.isArray(raw) ? raw : []; // flow returns {"message": "No data found..."} when empty
+  }
+
+  async function loadAllReturns() {
+    statusLine.textContent = 'Loading…';
+    listEl.innerHTML = '';
+
+    const results = await Promise.all(CUSTOMER_NAMES.map((name) => fetchReturnsFor(name).catch(() => [])));
+    const rows = results.flat().filter((row) => /^\d+$/.test(String(row.order_id)));
+
+    // No dedup on writes server-side, and status advances are new rows (not updates) —
+    // keep only the most recent row per order_id, same rule as the customer-facing app.
+    const latestByOrderId = new Map();
+    for (const row of rows) {
+      const existing = latestByOrderId.get(row.order_id);
+      if (!existing || new Date(row.createdat) > new Date(existing.createdat)) {
+        latestByOrderId.set(row.order_id, row);
+      }
+    }
+
+    const merged = Array.from(latestByOrderId.values()).sort(
+      (a, b) => new Date(b.createdat) - new Date(a.createdat)
+    );
+
+    statusLine.textContent = `${merged.length} return${merged.length === 1 ? '' : 's'}`;
+    render(merged);
+  }
+
+  function render(rows) {
+    listEl.innerHTML = '';
+    if (rows.length === 0) {
+      listEl.innerHTML = '<div class="text-center text-on-surface-variant py-12">No returns yet.</div>';
+      return;
+    }
+
+    for (const row of rows) {
+      const display = STATUS_DISPLAY[row.status] ?? { label: row.status, class: 'bg-surface-container' };
+      const isDeclined = row.status === 'declined';
+      const card = document.createElement('div');
+      card.className =
+        'bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4' +
+        (isDeclined ? ' opacity-60 grayscale' : '');
+
+      const canShip = row.status === 'initiated';
+      const canRefund = row.status === 'shipped' || row.status === 'in_transit';
+
+      card.innerHTML = `
+        <div class="flex-grow">
+          <div class="flex items-center gap-3 flex-wrap">
+            <h3 class="text-lg font-bold">${escapeHtml(row.item_name ?? 'Return item')}</h3>
+            <span class="px-2 py-1 rounded text-xs font-semibold ${display.class}">${display.label}</span>
+          </div>
+          <p class="text-sm text-on-surface-variant mt-1">
+            ${escapeHtml(row.customer_name ?? '')} · Order #${escapeHtml(String(row.order_id ?? ''))}
+          </p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          ${canShip ? `<button data-action="shipped" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-[#003da9]">Mark In Transit</button>` : ''}
+          ${canRefund ? `<button data-action="refunded" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-[#003da9]">Mark Refunded</button>` : ''}
+        </div>
+      `;
+
+      card.querySelectorAll('button[data-action]').forEach((btn) => {
+        btn.addEventListener('click', () => advanceStatus(row, btn.dataset.action, btn));
+      });
+
+      listEl.appendChild(card);
+    }
+  }
+
+  async function advanceStatus(row, newStatus, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Updating…';
+    try {
+      const res = await fetch(ADVANCE_RETURN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: row.customer_name,
+          order_id: row.order_id,
+          item_name: row.item_name,
+          new_status: newStatus,
+        }),
+      });
+      if (!res.ok) throw new Error(`Advance failed: ${res.status}`);
+      await loadAllReturns();
+    } catch (err) {
+      alert(`Couldn't update status: ${err.message}`);
+      btn.disabled = false;
+      btn.textContent = newStatus === 'shipped' ? 'Mark In Transit' : 'Mark Refunded';
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  loadAllReturns();
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Mental Model: ReturnPilot Backend
 
-> **⚠️ Status update (2026-08-21):** describes the Phase 1 FastAPI + Postgres backend. The team is spike-testing a viaSocket pivot (see `DECISIONS.md` Decision 17, `.kiro/specs/backend-architecture-migration/tasks.md` Phase 2) — the "three-tier" picture below (React → FastAPI → Postgres) becomes React → viaSocket webhooks → viaSocket Table if the spike passes. Not being kept in sync; accurate only if Phase 1 resumes.
+> **⚠️ Status update (2026-08-23):** This document describes the Phase 1 FastAPI + Postgres backend. Note that a parallel viaSocket-native build has also been completed and powers the live Vercel demo, acting as the backend (React → viaSocket webhooks → viaSocket Table).
 
 ## Introduction
 
